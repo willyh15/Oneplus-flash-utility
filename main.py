@@ -1,12 +1,25 @@
+import logging
+
+# Setup logging
+logging.basicConfig(filename='flash_tool.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Log application start
+logging.info('Application started')
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QComboBox
-import requests
-import subprocess
 import sys
+from device_manager import DeviceManager
+from config_loader import load_config
 
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
+        self.config = load_config()
+        self.init_ui()
+
+    def init_ui(self):
         self.setWindowTitle("OnePlus 7 Pro Rooting Tool")
         self.setGeometry(300, 300, 500, 400)
 
@@ -35,46 +48,34 @@ class FlashTool(QMainWindow):
         self.button_download_twrp.clicked.connect(self.download_twrp)
 
     def check_latest_magisk(self):
-        latest_version, download_url = self.get_latest_magisk_version()
+        latest_version, download_url = DeviceManager.get_latest_magisk_version()
         if latest_version:
             QtWidgets.QMessageBox.information(self, "Info", f"Latest Magisk version: {latest_version}\nDownload URL: {download_url}")
+            logging.info(f"Checked latest Magisk version: {latest_version}")
         else:
             QtWidgets.QMessageBox.critical(self, "Error", "Failed to fetch latest Magisk version.")
-
-    def get_latest_magisk_version(self):
-        url = "https://api.github.com/repos/topjohnwu/Magisk/releases/latest"
-        response = requests.get(url)
-        if response.status_code == 200:
-            latest_release = response.json()
-            latest_version = latest_release["tag_name"]
-            download_url = latest_release["assets"][0]["browser_download_url"]
-            return latest_version, download_url
-        else:
-            return None, None
+            logging.error("Failed to fetch latest Magisk version.")
 
     def flash_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")
         if rom_zip[0]:
-            subprocess.run(["adb", "reboot", "bootloader"])
-            subprocess.run(["fastboot", "flash", "recovery", rom_zip[0]])
+            DeviceManager.reboot_to_bootloader()
+            DeviceManager.flash_recovery(rom_zip[0])
             QtWidgets.QMessageBox.information(self, "Info", f"{rom_zip[0]} flashed successfully.")
+            logging.info(f"Flashed custom ROM: {rom_zip[0]}")
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", "No ROM selected!")
+            logging.warning("No ROM selected for flashing.")
 
     def download_twrp(self):
         device = self.device_dropdown.currentText()
-        twrp_url = self.get_device_twrp_url(device)
+        twrp_url = DeviceManager.get_device_twrp_url(device, self.config)
         if twrp_url:
             QtWidgets.QMessageBox.information(self, "Info", f"Download TWRP for {device} from: {twrp_url}")
+            logging.info(f"Download TWRP URL: {twrp_url}")
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", f"No TWRP URL available for {device}")
-
-    def get_device_twrp_url(self, device):
-        config = {
-            "OnePlus 7 Pro": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-            "Pixel 5": "https://example.com/twrp_pixel5.img"
-        }
-        return config.get(device, None)
+            logging.warning(f"No TWRP URL available for {device}")
 
 def application():
     app = QApplication(sys.argv)
