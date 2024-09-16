@@ -1,0 +1,20 @@
+{
+    "rooting": [
+        "boot_into_twrp",
+        "wipe_data",
+        "flash_magisk",
+        "reboot"
+    ],
+    "custom_rom": [
+        "boot_into_twrp",
+        "wipe_data",
+        "flash_custom_rom",
+        "flash_gapps",
+        "reboot"
+    ],
+    "decrypt": [
+        "boot_into_twrp",
+        "decrypt_storage",
+        "reboot"
+    ]
+}
