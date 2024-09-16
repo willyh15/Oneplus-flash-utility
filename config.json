@@ -1,22 +1,10 @@
 {
     "oneplus7pro": {
-        "model": "OnePlus 7 Pro",
-        "twrp": {
-            "stable": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-            "beta": "https://example.com/twrp-beta.img"
-        },
-        "magisk": {
-            "stable": "https://github.com/topjohnwu/Magisk/releases/latest",
-            "beta": "https://example.com/magisk-beta.zip"
-        }
+        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
     },
     "pixel5": {
-        "model": "Pixel 5",
-        "twrp": {
-            "stable": "https://example.com/twrp_pixel5.img"
-        },
-        "magisk": {
-            "stable": "https://github.com/topjohnwu/Magisk/releases/latest"
-        }
+        "twrp": "https://example.com/twrp_pixel5.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
     }
 }
