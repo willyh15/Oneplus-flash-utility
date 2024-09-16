@@ -20,6 +20,31 @@ class DeviceManager:
             logging.error(f"Failed to flash recovery: {e}")
 
     @staticmethod
+    def enter_edl_mode():
+        try:
+            subprocess.run(["adb", "reboot-edl"], check=True)
+            logging.info("Entered EDL mode for recovery.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to enter EDL mode: {e}")
+
+    @staticmethod
+    def backup_partitions():
+        try:
+            subprocess.run(["adb", "shell", "twrp", "backup", "SDB"], check=True)
+            logging.info("Partitions backed up successfully.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to back up partitions: {e}")
+
+    @staticmethod
+    def is_storage_encrypted():
+        try:
+            result = subprocess.check_output(["adb", "shell", "getprop", "ro.crypto.state"]).decode().strip()
+            return result == "encrypted"
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error checking storage encryption state: {e}")
+            return False
+
+    @staticmethod
     def get_latest_magisk_version():
         try:
             url = "https://api.github.com/repos/topjohnwu/Magisk/releases/latest"
