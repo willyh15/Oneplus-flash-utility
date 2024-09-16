@@ -1,17 +1,14 @@
 import logging
-
-# Setup logging
-logging.basicConfig(filename='flash_tool.log', level=logging.INFO, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Log application start
-logging.info('Application started')
-
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QComboBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QComboBox, QProgressBar
 import sys
 from device_manager import DeviceManager
 from config_loader import load_config
+from workflow_manager import WorkflowManager
+
+# Initialize logging
+logging.basicConfig(filename='flash_tool.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 class FlashTool(QMainWindow):
     def __init__(self):
@@ -21,7 +18,7 @@ class FlashTool(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("OnePlus 7 Pro Rooting Tool")
-        self.setGeometry(300, 300, 500, 400)
+        self.setGeometry(300, 300, 600, 400)
 
         # Dropdown for device selection
         self.device_dropdown = QComboBox(self)
@@ -29,53 +26,45 @@ class FlashTool(QMainWindow):
         self.device_dropdown.addItem("OnePlus 7 Pro")
         self.device_dropdown.addItem("Pixel 5")
 
-        # Check latest versions
-        self.button_check_latest = QPushButton(self)
-        self.button_check_latest.setText("Check Latest Magisk Version")
-        self.button_check_latest.setGeometry(50, 90, 400, 30)
-        self.button_check_latest.clicked.connect(self.check_latest_magisk)
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 300, 400, 30)
+        self.progressBar.setValue(0)
 
-        # Flash custom ROM
-        self.button_flash_rom = QPushButton(self)
-        self.button_flash_rom.setText("Flash Custom ROM")
-        self.button_flash_rom.setGeometry(50, 130, 400, 30)
-        self.button_flash_rom.clicked.connect(self.flash_custom_rom)
+        # Root device button
+        self.button_root_device = QPushButton(self)
+        self.button_root_device.setText("Root Device")
+        self.button_root_device.setGeometry(50, 90, 400, 30)
+        self.button_root_device.clicked.connect(self.root_device)
 
-        # Download TWRP
-        self.button_download_twrp = QPushButton(self)
-        self.button_download_twrp.setText("Download Latest TWRP")
-        self.button_download_twrp.setGeometry(50, 170, 400, 30)
-        self.button_download_twrp.clicked.connect(self.download_twrp)
+        # Install Custom ROM button
+        self.button_custom_rom = QPushButton(self)
+        self.button_custom_rom.setText("Install Custom ROM")
+        self.button_custom_rom.setGeometry(50, 130, 400, 30)
+        self.button_custom_rom.clicked.connect(self.install_custom_rom)
 
-    def check_latest_magisk(self):
-        latest_version, download_url = DeviceManager.get_latest_magisk_version()
-        if latest_version:
-            QtWidgets.QMessageBox.information(self, "Info", f"Latest Magisk version: {latest_version}\nDownload URL: {download_url}")
-            logging.info(f"Checked latest Magisk version: {latest_version}")
-        else:
-            QtWidgets.QMessageBox.critical(self, "Error", "Failed to fetch latest Magisk version.")
-            logging.error("Failed to fetch latest Magisk version.")
+        # Decrypt storage button
+        self.button_decrypt_storage = QPushButton(self)
+        self.button_decrypt_storage.setText("Decrypt Storage")
+        self.button_decrypt_storage.setGeometry(50, 170, 400, 30)
+        self.button_decrypt_storage.clicked.connect(self.decrypt_storage)
 
-    def flash_custom_rom(self):
+    def root_device(self):
+        device = self.device_dropdown.currentText()
+        workflow = WorkflowManager(self.progressBar, device, 'rooting')
+        workflow.start()
+
+    def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")
         if rom_zip[0]:
-            DeviceManager.reboot_to_bootloader()
-            DeviceManager.flash_recovery(rom_zip[0])
-            QtWidgets.QMessageBox.information(self, "Info", f"{rom_zip[0]} flashed successfully.")
-            logging.info(f"Flashed custom ROM: {rom_zip[0]}")
-        else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No ROM selected!")
-            logging.warning("No ROM selected for flashing.")
+            device = self.device_dropdown.currentText()
+            workflow = WorkflowManager(self.progressBar, device, 'custom_rom', custom_rom=rom_zip[0])
+            workflow.start()
 
-    def download_twrp(self):
+    def decrypt_storage(self):
         device = self.device_dropdown.currentText()
-        twrp_url = DeviceManager.get_device_twrp_url(device, self.config)
-        if twrp_url:
-            QtWidgets.QMessageBox.information(self, "Info", f"Download TWRP for {device} from: {twrp_url}")
-            logging.info(f"Download TWRP URL: {twrp_url}")
-        else:
-            QtWidgets.QMessageBox.warning(self, "Warning", f"No TWRP URL available for {device}")
-            logging.warning(f"No TWRP URL available for {device}")
+        workflow = WorkflowManager(self.progressBar, device, 'decrypt')
+        workflow.start()
 
 def application():
     app = QApplication(sys.argv)
