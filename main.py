@@ -14,6 +14,7 @@ class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
         self.config = load_config()
+        self.device_profile = None
         self.init_ui()
 
     def init_ui(self):
@@ -21,6 +22,27 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 600, 400)
         self.setWindowTitle("User-Friendly Rescue Mode")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Secure Rooting (Root + Encryption)")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Root device with encryption preservation button
+        self.button_root_with_encryption = QPushButton(self)
+        self.button_root_with_encryption.setText("Root Device (Preserve Encryption)")
+        self.button_root_with_encryption.setGeometry(50, 90, 400, 30)
+        self.button_root_with_encryption.clicked.connect(self.root_with_encryption)
+
+        # Root device without encryption preservation button
+        self.button_root_disable_encryption = QPushButton(self)
+        self.button_root_disable_encryption.setText("Root Device (Disable Encryption)")
+        self.button_root_disable_encryption.setGeometry(50, 130, 400, 30)
+        self.button_root_disable_encryption.clicked.connect(self.root_without_encryption)
+
+        
 
         # Progress bar
         self.progressBar = QProgressBar(self)
@@ -66,6 +88,16 @@ class FlashTool(QMainWindow):
         device = self.device_dropdown.currentText()
         workflow = WorkflowManager(self.progressBar, device, 'rooting')
         workflow.start()
+
+    def root_with_encryption(self):
+        logging.info("Rooting device while preserving encryption.")
+        DeviceManager.root_device(preserve_encryption=True)
+        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
+
+    def root_without_encryption(self):
+        logging.info("Rooting device with encryption disabled.")
+        DeviceManager.root_device(preserve_encryption=False)
+        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
 
     def enter_rescue_mode(self):
         logging.info("Entering Rescue Mode.")
