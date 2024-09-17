@@ -108,6 +108,52 @@ class FlashTool(QMainWindow):
         self.button_apply_ota.setGeometry(50, 130, 400, 30)
         self.button_apply_ota.clicked.connect(self.apply_ota_update)
 
+      # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Install Magisk Module button
+        self.button_install_magisk_module = QPushButton(self)
+        self.button_install_magisk_module.setText("Install Magisk Module")
+        self.button_install_magisk_module.setGeometry(50, 90, 400, 30)
+        self.button_install_magisk_module.clicked.connect(self.install_magisk_module)
+
+        # Remove Magisk Module button
+        self.button_remove_magisk_module = QPushButton(self)
+        self.button_remove_magisk_module.setText("Remove Magisk Module")
+        self.button_remove_magisk_module.setGeometry(50, 130, 400, 30)
+        self.button_remove_magisk_module.clicked.connect(self.remove_magisk_module)
+
+        # Toggle Magisk Hide button
+        self.button_toggle_magisk_hide = QPushButton(self)
+        self.button_toggle_magisk_hide.setText("Toggle Magisk Hide")
+        self.button_toggle_magisk_hide.setGeometry(50, 170, 400, 30)
+        self.button_toggle_magisk_hide.clicked.connect(self.toggle_magisk_hide)
+
+    def install_magisk_module(self):
+        module_zip = QFileDialog.getOpenFileName(self, "Select Magisk Module ZIP", "", "Zip files (*.zip)")[0]
+        if module_zip:
+            logging.info(f"Selected Magisk module: {module_zip}")
+            DeviceManager.install_magisk_module(module_zip)
+            QtWidgets.QMessageBox.information(self, "Info", "Magisk Module installed successfully.")
+        else:
+            logging.warning("No Magisk module selected.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No Magisk module selected!")
+
+    def remove_magisk_module(self):
+        module_name, ok = QtWidgets.QInputDialog.getText(self, 'Remove Magisk Module', 'Enter module name to remove:')
+        if ok and module_name:
+            DeviceManager.remove_magisk_module(module_name)
+            QtWidgets.QMessageBox.information(self, "Info", f"Magisk Module '{module_name}' removed successfully.")
+        else:
+            logging.warning("No module name provided for removal.")
+
+    def toggle_magisk_hide(self):
+        DeviceManager.toggle_magisk_hide()
+        QtWidgets.QMessageBox.information(self, "Info", "Magisk Hide toggled successfully.")
+
+
     def backup_before_ota(self):
         device = self.device_dropdown.currentText()
         logging.info(f"Starting backup before OTA update for {device}")
@@ -140,7 +186,25 @@ class FlashTool(QMainWindow):
             logging.warning("No OTA ZIP selected.")
             QtWidgets.QMessageBox.warning(self, "Warning", "No OTA update selected!")
 
+    def list_installed_magisk_modules():
+      try:
+          # List the installed Magisk modules
+          result = subprocess.check_output(["adb", "shell", "ls", "/data/adb/modules"]).decode().splitlines()
+          logging.info(f"Installed Magisk modules: {result}")
+          return result
+      except subprocess.CalledProcessError as e:
+          logging.error(f"Failed to list Magisk modules: {e}")
+          return []
 
+    def hide_root_for_app(package_name):
+      try:
+          # Use Magisk Hide to hide root from the specified app
+          subprocess.run(["adb", "shell", "magiskhide", "add", package_name], check=True)
+          logging.info(f"Root hidden from app: {package_name}")
+      except subprocess.CalledProcessError as e:
+          logging.error(f"Failed to hide root from app: {e}")
+
+      
     def apply_decryption(self):
         logging.info(f"Starting decryption process for device.")
         success = DeviceManager.apply_decryption_tool()
