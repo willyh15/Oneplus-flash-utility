@@ -14,6 +14,52 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def install_adb_driver_windows():
+        # URL to download Google USB drivers for Windows
+        driver_url = "https://dl.google.com/android/repository/latest_usb_driver_windows.zip"
+        driver_zip = "usb_driver.zip"
+        driver_dir = "usb_driver"
+
+        try:
+            # Download the USB driver ZIP file
+            logging.info("Downloading ADB driver for Windows...")
+            DeviceManager.download_file(driver_url, driver_zip)
+
+            # Unzip the driver file
+            if DeviceManager.unzip_file(driver_zip, driver_dir):
+                logging.info("Driver unzipped successfully. Please install it manually from: " + os.path.abspath(driver_dir))
+                return True
+            else:
+                logging.error("Failed to unzip driver.")
+                return False
+        except Exception as e:
+            logging.error(f"Failed to download or install ADB driver: {e}")
+            return False
+
+    @staticmethod
+    def download_file(url, save_path):
+        try:
+            response = requests.get(url, stream=True)
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(1024):
+                    if chunk:
+                        f.write(chunk)
+            logging.info(f"Downloaded: {save_path}")
+        except Exception as e:
+            logging.error(f"Failed to download file: {e}")
+
+    @staticmethod
+    def unzip_file(zip_path, extract_to):
+        try:
+            import zipfile
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_to)
+            return True
+        except Exception as e:
+            logging.error(f"Failed to unzip file: {e}")
+            return False
+
+   @staticmethod
     def install_adb_driver_linux():
         logging.info("Please install ADB using your package manager. For example: sudo apt install adb")
 
