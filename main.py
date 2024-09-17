@@ -7,6 +7,13 @@ from device_manager import DeviceManager
 from workflow_manager import WorkflowManager
 import warnings
 
+# Configure logging
+logging.basicConfig(
+    filename='flash_tool.log',
+    level=logging.DEBUG,  # Set to DEBUG to capture all logs
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 # Suppress DeprecationWarning
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -227,4 +234,8 @@ def application():
 
 
 if __name__ == "__main__":
-    application()
+    try:
+        application()
+    except Exception as e:
+        logging.exception("An unexpected error occurred.")
+
