@@ -25,6 +25,24 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to install Magisk module: {e}")
 
+  @staticmethod
+    def get_current_slot():
+        try:
+            result = subprocess.check_output(["fastboot", "getvar", "current-slot"]).decode().strip()
+            logging.info(f"Current slot: {result}")
+            return result
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error retrieving current slot: {e}")
+            return None
+
+    @staticmethod
+    def set_active_slot(slot):
+        try:
+            subprocess.run(["fastboot", "set_active", slot], check=True)
+            logging.info(f"Set active slot to: {slot}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to set active slot: {e}")
+
     @staticmethod
     def remove_magisk_module(module_name):
         try:
