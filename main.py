@@ -26,6 +26,85 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Web-Based Update Checker for ROMs & Kernels")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Advanced Logging & Diagnostics")
+        self.setGeometry(300, 300, 900, 700)
+
+        # Log Viewer (QTextEdit)
+        self.log_viewer = QTextEdit(self)
+        self.log_viewer.setGeometry(50, 50, 800, 400)
+        self.log_viewer.setReadOnly(True)  # Set to read-only
+
+        # Log Search field
+        self.search_field = QLineEdit(self)
+        self.search_field.setGeometry(50, 470, 400, 30)
+        self.search_field.setPlaceholderText("Search logs...")
+
+        # Search button
+        self.button_search_logs = QPushButton(self)
+        self.button_search_logs.setText("Search")
+        self.button_search_logs.setGeometry(460, 470, 100, 30)
+        self.button_search_logs.clicked.connect(self.search_logs)
+
+        # Filter Dropdown (Errors/Warnings/Info)
+        self.filter_dropdown = QComboBox(self)
+        self.filter_dropdown.setGeometry(580, 470, 150, 30)
+        self.filter_dropdown.addItem("All")
+        self.filter_dropdown.addItem("Errors")
+        self.filter_dropdown.addItem("Warnings")
+        self.filter_dropdown.addItem("Info")
+        self.filter_dropdown.currentIndexChanged.connect(self.filter_logs)
+
+        # Export Logs button
+        self.button_export_logs = QPushButton(self)
+        self.button_export_logs.setText("Export Logs")
+        self.button_export_logs.setGeometry(50, 510, 400, 30)
+        self.button_export_logs.clicked.connect(self.export_logs)
+
+        # Load logs from the log file and display them in the log viewer
+        self.load_logs()
+
+    def load_logs(self):
+        # Load logs from the log file and display them in the log viewer
+        try:
+            with open('flash_tool.log', 'r') as f:
+                log_content = f.read()
+                self.log_viewer.setPlainText(log_content)
+        except FileNotFoundError:
+            logging.warning("Log file not found.")
+            self.log_viewer.setPlainText("No logs available.")
+
+    def search_logs(self):
+        search_term = self.search_field.text()
+        if search_term:
+            logging.info(f"Searching for logs with term: {search_term}")
+            with open('flash_tool.log', 'r') as f:
+                results = [line for line in f if search_term.lower() in line.lower()]
+                self.log_viewer.setPlainText(''.join(results))
+        else:
+            self.load_logs()
+
+    def filter_logs(self):
+        filter_type = self.filter_dropdown.currentText()
+        with open('flash_tool.log', 'r') as f:
+            if filter_type == "Errors":
+                filtered_logs = [line for line in f if "ERROR" in line]
+            elif filter_type == "Warnings":
+                filtered_logs = [line for line in f if "WARNING" in line]
+            elif filter_type == "Info":
+                filtered_logs = [line for line in f if "INFO" in line]
+            else:
+                filtered_logs = f.readlines()
+            self.log_viewer.setPlainText(''.join(filtered_logs))
+
+    def export_logs(self):
+        # Export the logs to a file
+        save_path = QFileDialog.getSaveFileName(self, "Export Logs", "", "Log files (*.log)")[0]
+        if save_path:
+            with open('flash_tool.log', 'r') as f:
+                log_content = f.read()
+            with open(save_path, 'w') as export_file:
+                export_file.write(log_content)
+            QtWidgets.QMessageBox.information(self, "Info", f"Logs exported to {save_path}.")
 
         # Check ROM Update button
         self.button_check_rom_update = QPushButton(self)
