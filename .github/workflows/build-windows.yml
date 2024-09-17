@@ -1,4 +1,4 @@
-name: Build and Debug Windows Installer
+name: Build Windows Installer
 
 on:
   push:
@@ -26,21 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Build executable with PyInstaller (with debugging)
+    - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --log-level=DEBUG main.py
-
-    - name: Run the .exe and capture output (for debugging)
-      run: |
-        dist\\main.exe > exe_output.log 2>&1 || true
-      shell: cmd
-
-
-    - name: Upload log files for debugging
-      uses: actions/upload-artifact@v3
-      with:
-        name: exe-output-log
-        path: exe_output.log
+        pyinstaller --onefile main.py
 
     - name: Download Inno Setup
       run: |
