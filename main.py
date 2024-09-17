@@ -151,6 +151,69 @@ class FlashTool(QMainWindow):
         self.button_toggle_magisk_hide.setGeometry(50, 170, 400, 30)
         self.button_toggle_magisk_hide.clicked.connect(self.toggle_magisk_hide)
 
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Flash Partition button
+        self.button_flash_partition = QPushButton(self)
+        self.button_flash_partition.setText("Flash Partitions (Boot, Vendor, System)")
+        self.button_flash_partition.setGeometry(50, 90, 400, 30)
+        self.button_flash_partition.clicked.connect(self.flash_partitions)
+
+        # Logcat Button (Start/Stop Logcat)
+        self.button_logcat = QPushButton(self)
+        self.button_logcat.setText("Start Logcat")
+        self.button_logcat.setGeometry(50, 130, 400, 30)
+        self.button_logcat.clicked.connect(self.toggle_logcat)
+
+        # Logcat Viewer (Text Area)
+        self.log_viewer = QTextEdit(self)
+        self.log_viewer.setGeometry(50, 200, 700, 300)
+        self.log_viewer.setReadOnly(True)
+
+        self.logcat_process = None  # To manage logcat process state
+
+    def flash_partitions(self):
+        device = self.device_dropdown.currentText()
+        
+        # Ask user to select the partition files
+        boot_img = QFileDialog.getOpenFileName(self, "Select boot.img", "", "Image files (*.img)")[0]
+        vendor_img = QFileDialog.getOpenFileName(self, "Select vendor.img", "", "Image files (*.img)")[0]
+        system_img = QFileDialog.getOpenFileName(self, "Select system.img", "", "Image files (*.img)")[0]
+
+        if boot_img and vendor_img and system_img:
+            logging.info("User selected partition images for boot, vendor, and system.")
+            workflow = WorkflowManager(self.progressBar, device, 'partition_flash', boot_img, vendor_img, system_img)
+            workflow.start()
+
+        else:
+            logging.warning("User canceled partition selection.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No partitions selected for flashing!")
+
+    def toggle_logcat(self):
+        if self.logcat_process is None:
+            self.start_logcat()
+        else:
+            self.stop_logcat()
+
+    def start_logcat(self):
+        self.button_logcat.setText("Stop Logcat")
+        self.log_viewer.clear()  # Clear previous logs
+        self.logcat_thread = LogcatThread()
+        self.logcat_thread.new_log.connect(self.update_log_viewer)
+        self.logcat_thread.start()
+
+    def stop_logcat(self):
+        self.button_logcat.setText("Start Logcat")
+        if self.logcat_thread:
+            self.logcat_thread.stop()
+        self.logcat_thread = None
+
+    def update_log_viewer(self, log_line):
+        self.log_viewer.append(log_line)
+
     def install_magisk_module(self):
         module_zip = QFileDialog.getOpenFileName(self, "Select Magisk Module ZIP", "", "Zip files (*.zip)")[0]
         if module_zip:
