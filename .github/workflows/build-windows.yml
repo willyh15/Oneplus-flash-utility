@@ -56,8 +56,9 @@ jobs:
 
     - name: Build Installer with Inno Setup
       run: |
-        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" installer.iss  # Compile the installer
+        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
       shell: cmd
+
 
     - name: Upload installer
       uses: actions/upload-artifact@v3
