@@ -23,4 +23,10 @@
         "reflash_magisk_after_ota",
         "restore_device"
     ]
+    "partition_flash": [
+        "flash_boot_partition",
+        "flash_vendor_partition",
+        "flash_system_partition"
+    ]
+
 }
