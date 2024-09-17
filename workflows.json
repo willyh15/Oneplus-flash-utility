@@ -17,4 +17,10 @@
         "decrypt_storage",
         "reboot"
     ]
+    "ota_update": [
+        "backup_device",
+        "apply_ota_update",
+        "reflash_magisk_after_ota",
+        "restore_device"
+    ]
 }
