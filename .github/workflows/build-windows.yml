@@ -29,8 +29,7 @@ jobs:
     - name: Build executable with PyInstaller
       run: |
         pyinstaller --onefile main.py
-    
-    # Use the correct method to download and install Inno Setup
+
     - name: Download and install Inno Setup
       run: |
         curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe  # Download Inno Setup installer
