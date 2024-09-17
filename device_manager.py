@@ -12,6 +12,33 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def check_edl_mode():
+        try:
+            if platform.system() == "Windows":
+                # On Windows, you can check Device Manager or run commands via devcon or wmic to detect the device in EDL mode
+                edl_output = subprocess.check_output(["wmic", "path", "Win32_PnPEntity", "where", "Caption like '%Qualcomm%'"]).decode().strip()
+                if "Qualcomm" in edl_output:
+                    logging.info("Device is in EDL mode (Qualcomm HS-USB QDLoader detected).")
+                    return True
+            elif platform.system() == "Linux":
+                # On Linux, use lsusb to check for the Qualcomm device in EDL mode
+                edl_output = subprocess.check_output(["lsusb"]).decode().strip()
+                if "Qualcomm" in edl_output:
+                    logging.info("Device is in EDL mode (Qualcomm HS-USB QDLoader detected).")
+                    return True
+            elif platform.system() == "Darwin":  # macOS
+                # Similar to Linux, use system_profiler or lsusb equivalent to detect Qualcomm device
+                edl_output = subprocess.check_output(["system_profiler", "SPUSBDataType"]).decode().strip()
+                if "Qualcomm" in edl_output:
+                    logging.info("Device is in EDL mode (Qualcomm HS-USB QDLoader detected).")
+                    return True
+            logging.warning("Device is not in EDL mode.")
+            return False
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to detect EDL mode: {e}")
+            return False
+
+   @staticmethod
     def flash_edl_firmware(tool_path, firmware_path):
         try:
             if platform.system() == "Windows":
