@@ -1,14 +1,33 @@
 import logging
+import json
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QComboBox, QProgressBar, QLineEdit, QTextEdit
 import sys
 from device_manager import DeviceManager
 from workflow_manager import WorkflowManager
+import warnings
+
+# Suppress DeprecationWarning
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Initialize logging
 logging.basicConfig(filename='flash_tool.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Load configuration
+def load_config():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            logging.info("Loaded config.json successfully")
+            return config
+    except FileNotFoundError as e:
+        logging.error(f"config.json not found: {e}")
+        return {}
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding config.json: {e}")
+        return {}
 
+# Logcat thread definition
 class LogcatThread(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
 
@@ -29,7 +48,6 @@ class LogcatThread(QtCore.QThread):
         self.process.terminate()
         self.wait()
 
-
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
@@ -42,7 +60,7 @@ class FlashTool(QMainWindow):
         self.setWindowTitle("Rooting & Rescue Tool")
         self.setGeometry(300, 300, 800, 600)
 
-        # Dropdown for device selection
+        # Device selection dropdown
         self.device_dropdown = QComboBox(self)
         self.device_dropdown.setGeometry(50, 50, 400, 30)
         self.device_dropdown.addItem("OnePlus 7 Pro")
@@ -53,7 +71,7 @@ class FlashTool(QMainWindow):
         self.progressBar.setGeometry(50, 400, 400, 30)
         self.progressBar.setValue(0)
 
-        # Rooting and encryption management
+        # Rooting and encryption management buttons
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
         self.add_button("Root Device (Disable Encryption)", 130, self.root_without_encryption)
 
@@ -89,7 +107,6 @@ class FlashTool(QMainWindow):
         button.setText(label)
         button.setGeometry(50, y_position, 400, 30)
         button.clicked.connect(function)
-
     # Kernel tuning feature
     def kernel_tune(self):
         # Present current CPU frequency and I/O scheduler settings (to be expanded)
