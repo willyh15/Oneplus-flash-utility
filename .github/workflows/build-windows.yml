@@ -33,7 +33,7 @@ jobs:
     - name: Download and install Inno Setup
       run: |
         curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe  # Download Inno Setup installer
-        .\innosetup.exe /VERYSILENT /NORESTART  # Install Inno Setup silently
+        Start-Process -FilePath innosetup.exe -ArgumentList "/VERYSILENT" -Wait  # Install Inno Setup silently
       shell: pwsh
 
     - name: Create Inno Setup script
@@ -54,7 +54,8 @@ jobs:
 
     - name: Build Installer with Inno Setup
       run: |
-        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" installer.iss  # Compile the installer
+        Start-Process -FilePath "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" -ArgumentList "installer.iss" -Wait
+      shell: pwsh
 
     - name: Upload installer
       uses: actions/upload-artifact@v3
