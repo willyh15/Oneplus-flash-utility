@@ -1,10 +1,18 @@
 {
     "oneplus7pro": {
-        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
-    },
-    "pixel5": {
-        "twrp": "https://example.com/twrp_pixel5.img",
-        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
+        "roms": [
+            {
+                "name": "LineageOS",
+                "repo_url": "LineageOS/android_device_oneplus_guacamoleb"
+            },
+            {
+                "name": "PixelExperience",
+                "repo_url": "PixelExperience/android_device_oneplus_guacamoleb"
+            }
+        ],
+        "kernel": {
+            "name": "CustomKernel",
+            "repo_url": "CustomKernel/android_kernel_oneplus_sm8150"
+        }
     }
 }
