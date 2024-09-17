@@ -41,18 +41,18 @@ jobs:
 
     - name: Create Inno Setup script
       run: |
-        echo [Setup] > installer.iss
-        echo AppName=OnePlus 7 Pro Tool >> installer.iss
-        echo AppVersion=1.0 >> installer.iss
-        echo DefaultDirName={autopf}\\OnePlus 7 Pro Tool >> installer.iss
-        echo OutputDir=dist >> installer.iss
-        echo OutputBaseFilename=OnePlus7Pro_Tool_Installer >> installer.iss
-        echo [Files] >> installer.iss
-        echo Source: "dist\\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
-        echo [Icons] >> installer.iss
-        echo Name: "{group}\\OnePlus 7 Pro Tool"; Filename: "{app}\\main.exe" >> installer.iss
-        echo [Run] >> installer.iss
-        echo Filename: "{app}\\main.exe"; Description: "Launch OnePlus 7 Pro Tool"; Flags: nowait postinstall skipifsilent >> installer.iss
+        echo "[Setup]" > installer.iss
+        echo "AppName=OnePlus 7 Pro Tool" >> installer.iss
+        echo "AppVersion=1.0" >> installer.iss
+        echo "DefaultDirName={autopf}\\OnePlus 7 Pro Tool" >> installer.iss
+        echo "OutputDir=dist" >> installer.iss
+        echo "OutputBaseFilename=OnePlus7Pro_Tool_Installer" >> installer.iss
+        echo "[Files]" >> installer.iss
+        echo "Source: \"dist\\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
+        echo "[Icons]" >> installer.iss
+        echo "Name: \"{group}\\OnePlus 7 Pro Tool\"; Filename: \"{app}\\main.exe\"" >> installer.iss
+        echo "[Run]" >> installer.iss
+        echo "Filename: \"{app}\\main.exe\"; Description: \"Launch OnePlus 7 Pro Tool\"; Flags: nowait postinstall skipifsilent" >> installer.iss
 
     - name: Build Installer with Inno Setup
       run: |
