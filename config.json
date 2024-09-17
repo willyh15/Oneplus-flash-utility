@@ -3,15 +3,15 @@
         "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
         "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
         "kernel": {
-            "url": "https://example.com/kernels/oneplus7pro/boot.img",
+            "url": "https://androidfilehost.com/?fid=1899786940962595204",
             "md5": "9876543210abcdef"
         },
         "edl_firmware": {
-            "url": "https://example.com/oneplus7pro/edl_firmware.zip",
+            "url": "https://androidfilehost.com/?fid=17248734326145744640",
             "md5": "abc12345def67890"
         },
         "stock_firmware": {
-            "url": "https://example.com/oneplus7pro/stock_firmware.zip",
+            "url": "https://androidfilehost.com/?fid=4349826312261762670",
             "md5": "abc12345def67890"
         },
         "roms": [
