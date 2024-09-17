@@ -1,4 +1,4 @@
-name: Build Windows Installer
+name: Build and Test Windows Installer
 
 on:
   push:
@@ -25,6 +25,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pytest  # Ensure pytest is installed for testing
+
+    # Add a step for running tests
+    - name: Run Unit Tests
+      run: |
+        python -m unittest discover tests/
 
     - name: Build executable with PyInstaller
       run: |
