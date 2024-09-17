@@ -91,6 +91,56 @@ class FlashTool(QMainWindow):
         self.button_decrypt_device.setGeometry(50, 90, 400, 30)
         self.button_decrypt_device.clicked.connect(self.apply_decryption)
 
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Backup Before OTA button
+        self.button_backup_ota = QPushButton(self)
+        self.button_backup_ota.setText("Backup Before OTA Update")
+        self.button_backup_ota.setGeometry(50, 90, 400, 30)
+        self.button_backup_ota.clicked.connect(self.backup_before_ota)
+
+        # Apply OTA Update button
+        self.button_apply_ota = QPushButton(self)
+        self.button_apply_ota.setText("Apply OTA Update & Preserve Root")
+        self.button_apply_ota.setGeometry(50, 130, 400, 30)
+        self.button_apply_ota.clicked.connect(self.apply_ota_update)
+
+    def backup_before_ota(self):
+        device = self.device_dropdown.currentText()
+        logging.info(f"Starting backup before OTA update for {device}")
+        success = DeviceManager.backup_device()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Info", "Backup completed successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Backup failed. Check logs for details.")
+
+    def apply_ota_update(self):
+        device = self.device_dropdown.currentText()
+        logging.info(f"Applying OTA update for {device}")
+
+        # Ask the user to select the OTA zip file
+        ota_zip = QFileDialog.getOpenFileName(self, "Select OTA Update ZIP", "", "Zip files (*.zip)")[0]
+        if ota_zip:
+            logging.info(f"Selected OTA ZIP: {ota_zip}")
+            success = DeviceManager.apply_ota_update(ota_zip)
+            if success:
+                # Automatically re-flash Magisk to preserve root
+                magisk_installed = DeviceManager.reflash_magisk_after_ota()
+                if magisk_installed:
+                    QtWidgets.QMessageBox.information(self, "Info", "OTA Update applied and Magisk re-flashed successfully.")
+                else:
+                    QtWidgets.QMessageBox.critical(self, "Error", "Magisk re-flashing failed. Root may be lost.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "OTA Update failed. Restoring from backup.")
+                DeviceManager.restore_device()
+        else:
+            logging.warning("No OTA ZIP selected.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No OTA update selected!")
+
+
     def apply_decryption(self):
         logging.info(f"Starting decryption process for device.")
         success = DeviceManager.apply_decryption_tool()
