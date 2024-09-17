@@ -53,7 +53,7 @@ jobs:
         echo "Name: \"{group}\\OnePlus 7 Pro Tool\"; Filename: \"{app}\\main.exe\"" >> installer.iss
         echo "[Run]" >> installer.iss
         echo "Filename: \"{app}\\main.exe\"; Description: \"Launch OnePlus 7 Pro Tool\"; Flags: nowait postinstall skipifsilent" >> installer.iss
-      shell: cmd
+      shell: bash  # Switch to bash to avoid PowerShell issues
 
     - name: Build Installer with Inno Setup
       run: |
