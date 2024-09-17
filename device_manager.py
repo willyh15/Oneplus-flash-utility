@@ -11,6 +11,30 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
+   @staticmethod
+    def flash_rom(rom_path):
+        try:
+            logging.info(f"Starting to flash ROM: {rom_path}")
+            subprocess.run(["adb", "sideload", rom_path], check=True)
+            logging.info("ROM flashing completed successfully.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to flash ROM: {e}")
+
+    @staticmethod
+    def download_firmware(firmware_url, save_path):
+        try:
+            logging.info(f"Downloading firmware from: {firmware_url}")
+            response = requests.get(firmware_url, stream=True)
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(1024):
+                    if chunk:
+                        f.write(chunk)
+            logging.info(f"Firmware downloaded to: {save_path}")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to download firmware: {e}")
+            return False
+
      @staticmethod
     def get_latest_release(repo_url):
         try:
