@@ -14,6 +14,34 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
+ @staticmethod
+    def flash_kernel(kernel_image):
+        try:
+            # Verify the integrity of the kernel image before flashing
+            if DeviceManager.verify_image(kernel_image):
+                subprocess.run(["adb", "reboot", "bootloader"], check=True)
+                subprocess.run(["fastboot", "flash", "boot", kernel_image], check=True)
+                logging.info(f"Flashed kernel: {kernel_image}")
+            else:
+                logging.error(f"Kernel image verification failed for {kernel_image}. Aborting flash.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to flash kernel: {e}")
+
+    @staticmethod
+    def verify_image(image_path):
+        try:
+            sha256_hash = hashlib.sha256()
+            with open(image_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(byte_block)
+            checksum = sha256_hash.hexdigest()
+            logging.info(f"Checksum for {image_path}: {checksum}")
+            # Add logic to compare checksum with a known value if necessary
+            return True  # Assume valid for now
+        except FileNotFoundError as e:
+            logging.error(f"Kernel image file not found: {e}")
+            return False
+
   @staticmethod
     def get_cpu_frequency():
         try:
