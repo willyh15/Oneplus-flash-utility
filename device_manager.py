@@ -12,6 +12,59 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
     @staticmethod
+    def detect_encryption_type():
+        try:
+            # Detect encryption type using adb
+            encryption_type = subprocess.check_output(["adb", "shell", "getprop", "ro.crypto.type"]).decode().strip()
+            logging.info(f"Detected encryption type: {encryption_type}")
+            return encryption_type
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to detect encryption type: {e}")
+            return None
+
+    @staticmethod
+    def root_device(preserve_encryption=True):
+        encryption_type = DeviceManager.detect_encryption_type()
+
+        if encryption_type:
+            if encryption_type == "file":
+                logging.info("File-Based Encryption (FBE) detected. Proceeding with Magisk installation.")
+            elif encryption_type == "block":
+                logging.info("Full-Disk Encryption (FDE) detected. Proceeding with Magisk installation.")
+            else:
+                logging.warning("Unknown encryption type detected.")
+
+            # Proceed with Magisk installation
+            if preserve_encryption:
+                logging.info("Preserving encryption during Magisk installation.")
+                DeviceManager.install_magisk_with_encryption_preservation()
+            else:
+                logging.info("Encryption will be disabled.")
+                DeviceManager.install_magisk_with_encryption_disabler()
+
+    @staticmethod
+    def install_magisk_with_encryption_preservation():
+        try:
+            # Push and flash Magisk preserving encryption
+            subprocess.run(["adb", "push", "Magisk-v23.0.zip", "/sdcard/"], check=True)
+            subprocess.run(["adb", "shell", "twrp", "install", "/sdcard/Magisk-v23.0.zip"], check=True)
+            logging.info("Magisk installed successfully while preserving encryption.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to install Magisk with encryption preservation: {e}")
+
+    @staticmethod
+    def install_magisk_with_encryption_disabler():
+        try:
+            # Push and flash Magisk and encryption disabler
+            subprocess.run(["adb", "push", "Magisk-v23.0.zip", "/sdcard/"], check=True)
+            subprocess.run(["adb", "push", "Disable_Dm-Verity_ForceEncrypt_11.02.2020.zip", "/sdcard/"], check=True)
+            subprocess.run(["adb", "shell", "twrp", "install", "/sdcard/Magisk-v23.0.zip"], check=True)
+            subprocess.run(["adb", "shell", "twrp", "install", "/sdcard/Disable_Dm-Verity_ForceEncrypt_11.02.2020.zip"], check=True)
+            logging.info("Magisk and encryption disabler installed successfully.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to install Magisk with encryption disabler: {e}")
+
+    @staticmethod
     def flash_recovery(rom_zip):
         try:
             subprocess.run(["fastboot", "flash", "recovery", rom_zip], check=True)
