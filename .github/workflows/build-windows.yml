@@ -53,12 +53,12 @@ jobs:
         echo "Name: \"{group}\\OnePlus 7 Pro Tool\"; Filename: \"{app}\\main.exe\"" >> installer.iss
         echo "[Run]" >> installer.iss
         echo "Filename: \"{app}\\main.exe\"; Description: \"Launch OnePlus 7 Pro Tool\"; Flags: nowait postinstall skipifsilent" >> installer.iss
+      shell: cmd
 
     - name: Build Installer with Inno Setup
       run: |
         "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
       shell: cmd
-
 
     - name: Upload installer
       uses: actions/upload-artifact@v3
