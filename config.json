@@ -16,3 +16,13 @@
         }
     }
 }
+
+{
+    "oneplus7pro": {
+        "edl_firmware": {
+            "url": "https://example.com/oneplus7pro/edl_firmware.zip",
+            "md5": "abc12345def67890"
+        }
+    }
+}
+
