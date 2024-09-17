@@ -48,6 +48,42 @@ class FlashTool(QMainWindow):
         self.button_flash_rom.setGeometry(50, 90, 400, 30)
         self.button_flash_rom.clicked.connect(self.flash_rom)
 
+    def kernel_tune(self):
+        # Query current CPU frequency and I/O scheduler
+        current_cpu_freq = DeviceManager.get_cpu_frequency()
+        current_io_scheduler = DeviceManager.get_io_scheduler()
+
+        tuning_dialog = QtWidgets.QDialog(self)
+        tuning_dialog.setWindowTitle("Kernel Tuning")
+        layout = QtWidgets.QVBoxLayout()
+
+        # Display current CPU frequency and allow adjustment
+        layout.addWidget(QtWidgets.QLabel(f"Current CPU Frequency: {current_cpu_freq}"))
+        cpu_freq_input = QtWidgets.QLineEdit(tuning_dialog)
+        cpu_freq_input.setPlaceholderText("Enter new CPU frequency (in KHz)")
+        layout.addWidget(cpu_freq_input)
+
+        # Display current I/O scheduler and allow selection
+        layout.addWidget(QtWidgets.QLabel(f"Current I/O Scheduler: {current_io_scheduler}"))
+        io_sched_input = QtWidgets.QLineEdit(tuning_dialog)
+        io_sched_input.setPlaceholderText("Enter new I/O scheduler (noop, deadline, cfq)")
+        layout.addWidget(io_sched_input)
+
+        # Apply button
+        apply_button = QtWidgets.QPushButton("Apply Tuning", tuning_dialog)
+        apply_button.clicked.connect(lambda: self.apply_kernel_tuning(cpu_freq_input.text(), io_sched_input.text()))
+        layout.addWidget(apply_button)
+
+        tuning_dialog.setLayout(layout)
+        tuning_dialog.exec_()
+
+    def apply_kernel_tuning(self, cpu_freq, io_sched):
+        if cpu_freq:
+            DeviceManager.set_cpu_frequency(cpu_freq)
+        if io_sched:
+            DeviceManager.set_io_scheduler(io_sched)
+        QtWidgets.QMessageBox.information(self, "Info", "Kernel tuning applied successfully.")
+
     def detect_and_load_device(self):
         detected_device = DeviceManager.detect_device()
         if detected_device:
