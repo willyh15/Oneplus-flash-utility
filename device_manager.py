@@ -15,6 +15,17 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
  @staticmethod
+    def detect_encryption_type():
+        try:
+            # Check the encryption type using ADB
+            encryption_type = subprocess.check_output(["adb", "shell", "getprop", "ro.crypto.type"]).decode().strip()
+            logging.info(f"Detected encryption type: {encryption_type}")
+            return encryption_type
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error detecting encryption type: {e}")
+            return None
+
+ @staticmethod
     def apply_decryption_tool():
         encryption_type = DeviceManager.detect_encryption_type()
 
