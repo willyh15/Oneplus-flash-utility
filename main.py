@@ -28,6 +28,41 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Advanced Logging & Diagnostics")
         self.setGeometry(300, 300, 900, 700)
+        self.setWindowTitle("EDL Mode Recovery Tool")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Check EDL Mode button
+        self.button_check_edl = QPushButton(self)
+        self.button_check_edl.setText("Check EDL Mode")
+        self.button_check_edl.setGeometry(50, 90, 400, 30)
+        self.button_check_edl.clicked.connect(self.check_edl_mode)
+
+        # Flash Firmware in EDL Mode button
+        self.button_flash_edl = QPushButton(self)
+        self.button_flash_edl.setText("Flash Firmware (EDL Mode)")
+        self.button_flash_edl.setGeometry(50, 130, 400, 30)
+        self.button_flash_edl.clicked.connect(self.flash_edl_firmware)
+
+    def check_edl_mode(self):
+        if DeviceManager.check_edl_mode():
+            QtWidgets.QMessageBox.information(self, "Info", "Device is in EDL mode and ready for flashing.")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Device is not in EDL mode. Please boot into EDL mode.")
+
+    def flash_edl_firmware(self):
+        tool_path = QFileDialog.getOpenFileName(self, "Select EDL Tool (MsmDownloadTool or QFIL)", "", "Executable files (*.exe);;All files (*)")[0]
+        firmware_path = QFileDialog.getOpenFileName(self, "Select Prebuilt Firmware", "", "All files (*)")[0]
+        if tool_path and firmware_path:
+            DeviceManager.flash_edl_firmware(tool_path, firmware_path)
+            QtWidgets.QMessageBox.information(self, "Info", f"EDL tool launched. Select firmware: {firmware_path} in the tool.")
+        else:
+            logging.warning("No tool or firmware selected.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please select the EDL tool and firmware file.")
 
         # Log Viewer (QTextEdit)
         self.log_viewer = QTextEdit(self)
