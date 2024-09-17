@@ -34,6 +34,50 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Rooting Tool with Firmware Downloader")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Rooting Tool with Universal Support")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Flash ROM button
+        self.button_flash_rom = QPushButton(self)
+        self.button_flash_rom.setText("Flash ROM")
+        self.button_flash_rom.setGeometry(50, 90, 400, 30)
+        self.button_flash_rom.clicked.connect(self.flash_rom)
+
+    def detect_and_load_device(self):
+        detected_device = DeviceManager.detect_device()
+        if detected_device:
+            self.device_profile = DeviceManager.load_device_profile(detected_device, self.config)
+            if self.device_profile:
+                logging.info(f"Loaded device profile for: {detected_device}")
+                QtWidgets.QMessageBox.information(self, "Info", f"Device detected: {detected_device}")
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", f"No profile found for detected device: {detected_device}")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "No device detected!")
+
+    def flash_rom(self):
+        if self.device_profile and "roms" in self.device_profile:
+            rom_urls = [rom["url"] for rom in self.device_profile["roms"]]
+            selected_rom_url = self.select_rom(rom_urls)
+            if selected_rom_url:
+                DeviceManager.flash_rom(selected_rom_url)
+        else:
+            logging.warning("No ROMs available for the detected device.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No ROMs available for this device!")
+
+    def select_rom(self, rom_urls):
+        # Present a list of available ROMs to the user and allow them to select one
+        rom_dialog = QtWidgets.QInputDialog(self)
+        rom_dialog.setComboBoxItems(rom_urls)
+        selected_rom, ok = rom_dialog.getItem(self, "Select ROM", "Available ROMs:", rom_urls, 0, False)
+        if ok and selected_rom:
+            return selected_rom
+        return None
 
         # Progress bar
         self.progressBar = QProgressBar(self)
