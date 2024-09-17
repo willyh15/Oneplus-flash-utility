@@ -1,5 +1,7 @@
 import subprocess
 import requests
+import platform
+import os
 import logging
 
 class DeviceManager:
