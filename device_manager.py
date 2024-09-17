@@ -15,6 +15,49 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
  @staticmethod
+    def toggle_magisk_hide():
+        try:
+            # Enable Magisk Hide
+            subprocess.run(["adb", "shell", "magiskhide", "enable"], check=True)
+            logging.info("Magisk Hide enabled.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to enable Magisk Hide: {e}")
+
+    @staticmethod
+    def add_app_to_magisk_hide(package_name):
+        try:
+            # Add an app to Magisk Hide to bypass root detection
+            subprocess.run(["adb", "shell", "magiskhide", "add", package_name], check=True)
+            logging.info(f"Root hidden from app: {package_name}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to hide root from app: {e}")
+
+    @staticmethod
+    def install_safetynet_fix():
+        try:
+            # Download and install Universal SafetyNet Fix (user can specify URL if needed)
+            safetynet_fix_url = "https://example.com/universal-safetynet-fix.zip"  # Replace with actual URL
+            DeviceManager.download_and_install_zip(safetynet_fix_url, "/sdcard/SafetyNetFix.zip")
+            logging.info("Universal SafetyNet Fix installed.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to install SafetyNet Fix: {e}")
+
+    @staticmethod
+    def download_and_install_zip(url, file_path):
+        try:
+            # Download a ZIP file from the URL and install it
+            response = requests.get(url, stream=True)
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(1024):
+                    f.write(chunk)
+            # Install the downloaded ZIP via Magisk
+            subprocess.run(["adb", "push", file_path, "/sdcard/"], check=True)
+            subprocess.run(["adb", "shell", "magisk", "--install-module", file_path], check=True)
+            logging.info(f"Downloaded and installed: {file_path}")
+        except Exception as e:
+            logging.error(f"Failed to download or install ZIP: {e}")
+
+ @staticmethod
     def flash_kernel(kernel_image):
         try:
             # Verify the integrity of the kernel image before flashing
