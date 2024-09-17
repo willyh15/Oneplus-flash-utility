@@ -15,6 +15,50 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
  @staticmethod
+    def backup_device():
+        try:
+            # Perform a backup using TWRP or ADB (backup system and data)
+            subprocess.run(["adb", "shell", "twrp", "backup", "SDB"], check=True)
+            logging.info("Backup completed successfully.")
+            return True
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Backup failed: {e}")
+            return False
+
+    @staticmethod
+    def apply_ota_update(ota_zip):
+        try:
+            # Push the OTA update zip to the device
+            subprocess.run(["adb", "push", ota_zip, "/sdcard/"], check=True)
+            # Flash the OTA update using TWRP
+            subprocess.run(["adb", "shell", "twrp", "install", f"/sdcard/{ota_zip.split('/')[-1]}"], check=True)
+            logging.info(f"OTA Update {ota_zip} applied successfully.")
+            return True
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to apply OTA update: {e}")
+            return False
+
+    @staticmethod
+    def reflash_magisk_after_ota():
+        try:
+            # Re-flash Magisk after the OTA update
+            subprocess.run(["adb", "shell", "magisk", "--install-module", "/sdcard/Magisk-v23.0.zip"], check=True)
+            logging.info("Magisk re-flashed successfully.")
+            return True
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to re-flash Magisk: {e}")
+            return False
+
+    @staticmethod
+    def restore_device():
+        try:
+            # Restore the device from the backup
+            subprocess.run(["adb", "shell", "twrp", "restore", "SDB"], check=True)
+            logging.info("Device restored from backup successfully.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to restore device: {e}")
+
+ @staticmethod
     def detect_encryption_type():
         try:
             # Check the encryption type using ADB
