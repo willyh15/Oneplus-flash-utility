@@ -32,8 +32,9 @@ jobs:
 
     - name: Run the .exe and capture output (for debugging)
       run: |
-        ./dist/main.exe > exe_output.log 2>&1 || true
-      shell: bash
+        dist\\main.exe > exe_output.log 2>&1 || true
+      shell: cmd
+
 
     - name: Upload log files for debugging
       uses: actions/upload-artifact@v3
