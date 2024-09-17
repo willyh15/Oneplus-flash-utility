@@ -1,30 +1,23 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock
 from workflow_manager import WorkflowManager
+from PyQt5.QtWidgets import QProgressBar
 
 class TestWorkflowManager(unittest.TestCase):
 
-    @patch('workflow_manager.WorkflowManager.load_workflow')
-    @patch('device_manager.DeviceManager.flash_partition', return_value=True)
-    def test_workflow_success(self, mock_flash_partition, mock_load_workflow):
-        mock_load_workflow.return_value = None
-        workflow = WorkflowManager(None, "device", "partition_flash", "boot.img", "vendor.img", "system.img")
-        workflow.workflows = {
-            "partition_flash": ["flash_boot_partition", "flash_vendor_partition", "flash_system_partition"]
-        }
-        workflow.start()
-        self.assertTrue(mock_flash_partition.called)
-    
-    @patch('workflow_manager.WorkflowManager.load_workflow')
-    def test_workflow_fail(self, mock_load_workflow):
-        mock_load_workflow.return_value = None
-        workflow = WorkflowManager(None, "device", "partition_flash", "boot.img", None, None)
-        workflow.workflows = {
-            "partition_flash": ["flash_boot_partition", "flash_vendor_partition"]
-        }
-        workflow.start()
-        # Expecting the workflow to fail due to missing images
-        self.assertFalse(workflow.progressBar.value() == 100)
+    def setUp(self):
+        self.mock_progressBar = MagicMock(spec=QProgressBar)
+        self.workflow = WorkflowManager(self.mock_progressBar, 'OnePlus 7 Pro', 'partition_flash', 'boot.img', 'vendor.img', 'system.img')
 
-if __name__ == "__main__":
+    def test_workflow_success(self):
+        self.workflow.start()
+        self.mock_progressBar.setValue.assert_called_with(100)
+
+    def test_workflow_fail(self):
+        # Testing failure case with a missing image or incorrect setup
+        self.workflow.boot_img = None
+        with self.assertRaises(Exception):
+            self.workflow.start()
+
+if __name__ == '__main__':
     unittest.main()
