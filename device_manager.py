@@ -12,6 +12,21 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def flash_edl_firmware(tool_path, firmware_path):
+        try:
+            if platform.system() == "Windows":
+                # Launch MsmDownloadTool or QFIL with the specified firmware
+                logging.info(f"Launching EDL flashing tool: {tool_path}")
+                os.startfile(tool_path)  # On Windows, this will open the specified tool
+                logging.info(f"Please select the firmware in {firmware_path} and start the flashing process.")
+            elif platform.system() == "Linux" or platform.system() == "Darwin":
+                # EDL flashing on Linux/macOS is done via edl.py or open-source tools like QFIL
+                logging.info(f"Launching EDL tool or QFIL on {platform.system()}. Please proceed manually.")
+                subprocess.run(["./edl.py", "firehose", firmware_path], check=True)
+        except Exception as e:
+            logging.error(f"Failed to launch EDL tool: {e}")
+
+   @staticmethod
     def flash_rom(rom_path):
         try:
             logging.info(f"Starting to flash ROM: {rom_path}")
