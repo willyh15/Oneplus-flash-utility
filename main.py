@@ -175,6 +175,35 @@ class FlashTool(QMainWindow):
 
         self.logcat_process = None  # To manage logcat process state
 
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Flash Partition button
+        self.button_flash_partition = QPushButton(self)
+        self.button_flash_partition.setText("Flash Partitions (Boot, Vendor, System)")
+        self.button_flash_partition.setGeometry(50, 90, 400, 30)
+        self.button_flash_partition.clicked.connect(self.flash_partitions)
+
+    def flash_partitions(self):
+        device = self.device_dropdown.currentText()
+        
+        # Ask user to select the partition files
+        boot_img = QFileDialog.getOpenFileName(self, "Select boot.img", "", "Image files (*.img)")[0]
+        vendor_img = QFileDialog.getOpenFileName(self, "Select vendor.img", "", "Image files (*.img)")[0]
+        system_img = QFileDialog.getOpenFileName(self, "Select system.img", "", "Image files (*.img)")[0]
+
+        if boot_img and vendor_img and system_img:
+            logging.info("User selected partition images for boot, vendor, and system.")
+            workflow = WorkflowManager(self.progressBar, device, 'partition_flash', boot_img, vendor_img, system_img)
+            workflow.start()
+
+        else:
+            logging.warning("User canceled partition selection.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No partitions selected for flashing!")
+
+
     def flash_partitions(self):
         device = self.device_dropdown.currentText()
         
