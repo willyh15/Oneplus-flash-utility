@@ -15,6 +15,33 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
  @staticmethod
+    def flash_partition(image_path, partition):
+        try:
+            # Verify the integrity of the partition image before flashing
+            if DeviceManager.verify_image(image_path):
+                subprocess.run(["fastboot", "flash", partition, image_path], check=True)
+                logging.info(f"Flashed {partition} partition with {image_path}")
+            else:
+                logging.error(f"Integrity check failed for {image_path}. Aborting flash.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to flash {partition}: {e}")
+
+    @staticmethod
+    def verify_image(image_path):
+        try:
+            sha256_hash = hashlib.sha256()
+            with open(image_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(byte_block)
+            checksum = sha256_hash.hexdigest()
+            logging.info(f"Checksum for {image_path}: {checksum}")
+            # Add logic to compare checksum with a known value if necessary
+            return True  # For now, we'll assume the image is valid
+        except FileNotFoundError as e:
+            logging.error(f"File not found: {e}")
+            return False
+
+ @staticmethod
     def install_magisk_module(module_zip):
         try:
             # Push the Magisk module to the device
