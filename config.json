@@ -1,70 +1,30 @@
 {
     "oneplus7pro": {
-        "roms": [
-            {
-                "name": "LineageOS",
-                "repo_url": "LineageOS/android_device_oneplus_guacamoleb"
-            },
-            {
-                "name": "PixelExperience",
-                "repo_url": "PixelExperience/android_device_oneplus_guacamoleb"
-            }
-        ],
+        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
         "kernel": {
-            "name": "CustomKernel",
-            "repo_url": "CustomKernel/android_kernel_oneplus_sm8150"
-        }
-    }
-}
-
-{
-    "oneplus7pro": {
+            "url": "https://example.com/kernels/oneplus7pro/boot.img",
+            "md5": "9876543210abcdef"
+        },
         "edl_firmware": {
             "url": "https://example.com/oneplus7pro/edl_firmware.zip",
             "md5": "abc12345def67890"
-        }
-    }
-}
-
-{
-    "oneplus7pro": {
+        },
         "stock_firmware": {
             "url": "https://example.com/oneplus7pro/stock_firmware.zip",
             "md5": "abc12345def67890"
         },
         "roms": [
-            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
-            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
-        ],
-        "kernel": {
-            "url": "https://example.com/kernels/oneplus7pro/boot.img",
-            "md5": "9876543210abcdef"
-        }
-    },
-    "pixel5": {
-        "stock_firmware": {
-            "url": "https://example.com/pixel5/stock_firmware.zip",
-            "md5": "abcdef1234567890"
-        },
-        "roms": [
-            {"name": "LineageOS", "url": "https://download.lineageos.org/redfin"},
-            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/redfin"}
-        ],
-        "kernel": {
-            "url": "https://example.com/kernels/pixel5/boot.img",
-            "md5": "1122334455667788"
-        }
-    }
-}
-
-{
-    "oneplus7pro": {
-        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
-        "kernel": "https://example.com/kernels/oneplus7pro/boot.img",
-        "roms": [
-            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
-            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
+            {
+                "name": "LineageOS",
+                "repo_url": "LineageOS/android_device_oneplus_guacamoleb",
+                "url": "https://download.lineageos.org/guacamoleb"
+            },
+            {
+                "name": "PixelExperience",
+                "repo_url": "PixelExperience/android_device_oneplus_guacamoleb",
+                "url": "https://download.pixelexperience.org/guacamoleb"
+            }
         ],
         "rooting_script": {
             "url": "https://example.com/rooting_scripts/oneplus7pro_root.sh",
@@ -74,27 +34,27 @@
                 "adb sideload magisk.zip"
             ]
         }
-    }
-}
-
-{
-    "oneplus7pro": {
-        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
-        "kernel": "https://example.com/kernels/oneplus7pro/boot.img",
-        "roms": [
-            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
-            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
-        ]
     },
     "pixel5": {
         "twrp": "https://example.com/twrp_pixel5.img",
         "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
-        "kernel": "https://example.com/kernels/pixel5/boot.img",
+        "kernel": {
+            "url": "https://example.com/kernels/pixel5/boot.img",
+            "md5": "1122334455667788"
+        },
+        "stock_firmware": {
+            "url": "https://example.com/pixel5/stock_firmware.zip",
+            "md5": "abcdef1234567890"
+        },
         "roms": [
-            {"name": "LineageOS", "url": "https://download.lineageos.org/redfin"},
-            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/redfin"}
+            {
+                "name": "LineageOS",
+                "url": "https://download.lineageos.org/redfin"
+            },
+            {
+                "name": "PixelExperience",
+                "url": "https://download.pixelexperience.org/redfin"
+            }
         ]
     }
 }
-
