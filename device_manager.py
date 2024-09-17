@@ -14,6 +14,46 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
+  @staticmethod
+    def get_cpu_frequency():
+        try:
+            # Query the current CPU frequency
+            result = subprocess.check_output(["adb", "shell", "cat", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"]).decode().strip()
+            logging.info(f"Current CPU frequency: {result}")
+            return result
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to get CPU frequency: {e}")
+            return None
+
+    @staticmethod
+    def set_cpu_frequency(frequency):
+        try:
+            # Set the CPU frequency (requires root)
+            subprocess.run(["adb", "shell", "echo", frequency, ">", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed"], check=True)
+            logging.info(f"CPU frequency set to: {frequency}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to set CPU frequency: {e}")
+
+    @staticmethod
+    def get_io_scheduler():
+        try:
+            # Query the current I/O scheduler
+            result = subprocess.check_output(["adb", "shell", "cat", "/sys/block/mmcblk0/queue/scheduler"]).decode().strip()
+            logging.info(f"Current I/O scheduler: {result}")
+            return result
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to get I/O scheduler: {e}")
+            return None
+
+    @staticmethod
+    def set_io_scheduler(scheduler):
+        try:
+            # Set the I/O scheduler (requires root)
+            subprocess.run(["adb", "shell", "echo", scheduler, ">", "/sys/block/mmcblk0/queue/scheduler"], check=True)
+            logging.info(f"I/O scheduler set to: {scheduler}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to set I/O scheduler: {e}")
+
    @staticmethod
     def detect_device():
         try:
