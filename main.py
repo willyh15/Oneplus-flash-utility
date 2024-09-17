@@ -30,6 +30,52 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 900, 700)
         self.setWindowTitle("EDL Mode Recovery Tool")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Rooting Tool with Driver Management")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Check ADB Driver button
+        self.button_check_adb = QPushButton(self)
+        self.button_check_adb.setText("Check ADB Driver")
+        self.button_check_adb.setGeometry(50, 90, 400, 30)
+        self.button_check_adb.clicked.connect(self.check_adb_driver)
+
+        # Install ADB Driver button
+        self.button_install_adb = QPushButton(self)
+        self.button_install_adb.setText("Install ADB Driver (Windows)")
+        self.button_install_adb.setGeometry(50, 130, 400, 30)
+        self.button_install_adb.clicked.connect(self.install_adb_driver)
+
+        # Check Fastboot Driver button
+        self.button_check_fastboot = QPushButton(self)
+        self.button_check_fastboot.setText("Check Fastboot Driver")
+        self.button_check_fastboot.setGeometry(50, 170, 400, 30)
+        self.button_check_fastboot.clicked.connect(self.check_fastboot_driver)
+
+    def check_adb_driver(self):
+        logging.info("Checking ADB driver...")
+        if DeviceManager.check_adb_driver():
+            QtWidgets.QMessageBox.information(self, "Info", "ADB driver is installed and working.")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "ADB driver is not installed or not working properly.")
+
+    def install_adb_driver(self):
+        logging.info("Installing ADB driver for Windows...")
+        if DeviceManager.install_adb_driver_windows():
+            QtWidgets.QMessageBox.information(self, "Info", "ADB driver downloaded. Please install it manually.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Failed to install ADB driver.")
+
+    def check_fastboot_driver(self):
+        logging.info("Checking Fastboot driver...")
+        if DeviceManager.check_fastboot_driver():
+            QtWidgets.QMessageBox.information(self, "Info", "Fastboot driver is installed and working.")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Fastboot driver is not installed or not working properly.")
 
         # Progress bar
         self.progressBar = QProgressBar(self)
