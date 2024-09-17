@@ -14,6 +14,18 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
+ def download_decryption_tool(url, file_name):
+    try:
+        response = requests.get(url, stream=True)
+        with open(file_name, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+        logging.info(f"Downloaded decryption tool: {file_name}")
+        return file_name
+    except Exception as e:
+        logging.error(f"Failed to download decryption tool: {e}")
+        return None
+
  @staticmethod
     def toggle_magisk_hide():
         try:
