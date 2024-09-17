@@ -14,6 +14,44 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def check_adb_driver():
+        try:
+            if platform.system() == "Windows":
+                # Check if ADB driver is installed on Windows
+                adb_output = subprocess.check_output(["adb", "devices"]).decode().strip()
+                if "List of devices attached" in adb_output:
+                    logging.info("ADB driver is installed and device is detected.")
+                    return True
+            elif platform.system() == "Linux" or platform.system() == "Darwin":
+                # Check if ADB is installed on Linux/macOS
+                subprocess.check_output(["which", "adb"])
+                logging.info("ADB driver is installed.")
+                return True
+            return False
+        except subprocess.CalledProcessError as e:
+            logging.error("ADB driver is not installed or the device is not detected.")
+            return False
+
+    @staticmethod
+    def check_fastboot_driver():
+        try:
+            if platform.system() == "Windows":
+                # Check if Fastboot driver is installed on Windows
+                fastboot_output = subprocess.check_output(["fastboot", "devices"]).decode().strip()
+                if fastboot_output:
+                    logging.info("Fastboot driver is installed and device is detected.")
+                    return True
+            elif platform.system() == "Linux" or platform.system() == "Darwin":
+                # Check if Fastboot is installed on Linux/macOS
+                subprocess.check_output(["which", "fastboot"])
+                logging.info("Fastboot driver is installed.")
+                return True
+            return False
+        except subprocess.CalledProcessError as e:
+            logging.error("Fastboot driver is not installed or the device is not detected.")
+            return False
+
+   @staticmethod
     def install_adb_driver_windows():
         # URL to download Google USB drivers for Windows
         driver_url = "https://dl.google.com/android/repository/latest_usb_driver_windows.zip"
