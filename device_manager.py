@@ -14,6 +14,44 @@ class DeviceManager:
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
+ @staticmethod
+    def apply_decryption_tool():
+        encryption_type = DeviceManager.detect_encryption_type()
+
+        if encryption_type == "file":
+            logging.info("Applying decryption for File-Based Encryption (FBE).")
+            return DeviceManager.apply_fbe_decryption_tool()
+        elif encryption_type == "block":
+            logging.info("Applying decryption for Full-Disk Encryption (FDE).")
+            return DeviceManager.apply_fde_decryption_tool()
+        else:
+            logging.error("Unknown encryption type detected.")
+            return False
+
+    @staticmethod
+    def apply_fbe_decryption_tool():
+        try:
+            # Push and flash the necessary decryption tool for FBE
+            subprocess.run(["adb", "push", "Disable_Dm-Verity_ForceEncrypt_FBE.zip", "/sdcard/"], check=True)
+            subprocess.run(["adb", "shell", "twrp", "install", "/sdcard/Disable_Dm-Verity_ForceEncrypt_FBE.zip"], check=True)
+            logging.info("Applied FBE decryption tool.")
+            return True
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to apply FBE decryption tool: {e}")
+            return False
+
+    @staticmethod
+    def apply_fde_decryption_tool():
+        try:
+            # Push and flash the necessary decryption tool for FDE
+            subprocess.run(["adb", "push", "Disable_Dm-Verity_ForceEncrypt_FDE.zip", "/sdcard/"], check=True)
+            subprocess.run(["adb", "shell", "twrp", "install", "/sdcard/Disable_Dm-Verity_ForceEncrypt_FDE.zip"], check=True)
+            logging.info("Applied FDE decryption tool.")
+            return True
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to apply FDE decryption tool: {e}")
+            return False
+
  def download_decryption_tool(url, file_name):
     try:
         response = requests.get(url, stream=True)
