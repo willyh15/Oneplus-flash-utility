@@ -25,7 +25,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest  # Ensure pytest is installed for testing
+        pip install pytest pytest-qt py  # Add py for pytest-qt dependency
 
     - name: Run Unit Tests and GUI Tests
       run: |
