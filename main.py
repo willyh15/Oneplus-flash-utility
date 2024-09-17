@@ -9,6 +9,26 @@ from workflow_manager import WorkflowManager
 # Initialize logging
 logging.basicConfig(filename='flash_tool.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
+class LogcatThread(QThread):
+    new_log = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(LogcatThread, self).__init__(parent)
+        self.running = True
+
+    def run(self):
+        # Start adb logcat process
+        self.process = subprocess.Popen(["adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        while self.running:
+            log_line = self.process.stdout.readline().decode('utf-8')
+            if log_line:
+                self.new_log.emit(log_line.strip())
+
+  def stop(self):
+        self.running = False
+        self.process.terminate()
+        self.wait()
 
 class FlashTool(QMainWindow):
     def __init__(self):
