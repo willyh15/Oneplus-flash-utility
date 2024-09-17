@@ -32,6 +32,68 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Rooting Tool with Driver Management")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Rooting Tool with Firmware Downloader")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Download Firmware button
+        self.button_download_firmware = QPushButton(self)
+        self.button_download_firmware.setText("Download Firmware")
+        self.button_download_firmware.setGeometry(50, 90, 400, 30)
+        self.button_download_firmware.clicked.connect(self.download_firmware)
+
+        # Download Kernel button
+        self.button_download_kernel = QPushButton(self)
+        self.button_download_kernel.setText("Download Kernel")
+        self.button_download_kernel.setGeometry(50, 130, 400, 30)
+        self.button_download_kernel.clicked.connect(self.download_kernel)
+
+    def detect_and_load_device(self):
+        detected_device = DeviceManager.detect_device()
+        if detected_device:
+            self.device_profile = DeviceManager.load_device_profile(detected_device, self.config)
+            if self.device_profile:
+                logging.info(f"Loaded device profile for: {detected_device}")
+                QtWidgets.QMessageBox.information(self, "Info", f"Device detected: {detected_device}")
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", f"No profile found for detected device: {detected_device}")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "No device detected!")
+
+    def download_firmware(self):
+        if self.device_profile and "stock_firmware" in self.device_profile:
+            firmware_url = self.device_profile["stock_firmware"]["url"]
+            expected_md5 = self.device_profile["stock_firmware"]["md5"]
+            save_path = QFileDialog.getSaveFileName(self, "Save Firmware As", "", "Zip files (*.zip)")[0]
+            if save_path:
+                success = DeviceManager.download_and_verify_firmware(firmware_url, save_path, expected_md5)
+                if success:
+                    QtWidgets.QMessageBox.information(self, "Info", "Firmware downloaded and verified successfully.")
+                else:
+                    QtWidgets.QMessageBox.critical(self, "Error", "Failed to verify firmware. Check logs for details.")
+        else:
+            logging.warning("No stock firmware URL available for the detected device.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No stock firmware available for this device!")
+
+    def download_kernel(self):
+        if self.device_profile and "kernel" in self.device_profile:
+            kernel_url = self.device_profile["kernel"]["url"]
+            expected_md5 = self.device_profile["kernel"]["md5"]
+            save_path = QFileDialog.getSaveFileName(self, "Save Kernel As", "", "Image files (*.img)")[0]
+            if save_path:
+                success = DeviceManager.download_and_verify_firmware(kernel_url, save_path, expected_md5)
+                if success:
+                    QtWidgets.QMessageBox.information(self, "Info", "Kernel downloaded and verified successfully.")
+                else:
+                    QtWidgets.QMessageBox.critical(self, "Error", "Failed to verify kernel. Check logs for details.")
+        else:
+            logging.warning("No kernel URL available for the detected device.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No kernel available for this device!")
+
 
         # Progress bar
         self.progressBar = QProgressBar(self)
