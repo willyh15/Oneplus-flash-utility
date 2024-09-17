@@ -24,6 +24,45 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Secure Rooting (Root + Encryption)")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("Web-Based Update Checker for ROMs & Kernels")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Check ROM Update button
+        self.button_check_rom_update = QPushButton(self)
+        self.button_check_rom_update.setText("Check for ROM Updates")
+        self.button_check_rom_update.setGeometry(50, 90, 400, 30)
+        self.button_check_rom_update.clicked.connect(self.check_rom_update)
+
+        # Check Kernel Update button
+        self.button_check_kernel_update = QPushButton(self)
+        self.button_check_kernel_update.setText("Check for Kernel Updates")
+        self.button_check_kernel_update.setGeometry(50, 130, 400, 30)
+        self.button_check_kernel_update.clicked.connect(self.check_kernel_update)
+
+        # Status label to show the latest version
+        self.label_status = QLabel(self)
+        self.label_status.setGeometry(50, 170, 700, 30)
+
+    def check_rom_update(self):
+        if self.device_profile and "roms" in self.device_profile:
+            for rom in self.device_profile["roms"]:
+                version, download_url = DeviceManager.get_latest_release(rom["repo_url"])
+                if version:
+                    self.label_status.setText(f"Latest {rom['name']} version: {version}. Download: {download_url}")
+                else:
+                    self.label_status.setText(f"Failed to fetch update for {rom['name']}.")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No ROMs configured for this device.")
+
+    def check_kernel_update(self):
+        if self.device_profile and "kernel" in self.device_profile:
+            version, download_url = DeviceManager.get_latest_release(self.device_profile["kernel"]["repo_url"])
+            if version:
+                self.label_status.setText(f"Latest Kernel version: {version}. Download: {download_url}")
+            else:
+                self.label_status.setText("Failed to fetch kernel update.")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No kernel configured for this device.")
 
         # Progress bar
         self.progressBar = QProgressBar(self)
