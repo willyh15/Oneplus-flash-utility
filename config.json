@@ -77,3 +77,24 @@
     }
 }
 
+{
+    "oneplus7pro": {
+        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
+        "kernel": "https://example.com/kernels/oneplus7pro/boot.img",
+        "roms": [
+            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
+            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
+        ]
+    },
+    "pixel5": {
+        "twrp": "https://example.com/twrp_pixel5.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
+        "kernel": "https://example.com/kernels/pixel5/boot.img",
+        "roms": [
+            {"name": "LineageOS", "url": "https://download.lineageos.org/redfin"},
+            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/redfin"}
+        ]
+    }
+}
+
