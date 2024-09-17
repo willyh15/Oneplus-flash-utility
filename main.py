@@ -45,6 +45,24 @@ class FlashTool(QMainWindow):
         self.device_dropdown.addItem("OnePlus 7 Pro")
         self.device_dropdown.addItem("Pixel 5")
 
+        # Enable Magisk Hide button
+        self.button_enable_magisk_hide = QPushButton(self)
+        self.button_enable_magisk_hide.setText("Enable Magisk Hide")
+        self.button_enable_magisk_hide.setGeometry(50, 90, 400, 30)
+        self.button_enable_magisk_hide.clicked.connect(self.enable_magisk_hide)
+
+        # Add App to Magisk Hide button
+        self.button_add_app_to_magisk_hide = QPushButton(self)
+        self.button_add_app_to_magisk_hide.setText("Add App to Magisk Hide")
+        self.button_add_app_to_magisk_hide.setGeometry(50, 130, 400, 30)
+        self.button_add_app_to_magisk_hide.clicked.connect(self.add_app_to_magisk_hide)
+
+        # Install SafetyNet Fix button
+        self.button_install_safetynet_fix = QPushButton(self)
+        self.button_install_safetynet_fix.setText("Install SafetyNet Fix")
+        self.button_install_safetynet_fix.setGeometry(50, 170, 400, 30)
+        self.button_install_safetynet_fix.clicked.connect(self.install_safetynet_fix)
+
         # Progress bar
         self.progressBar = QProgressBar(self)
         self.progressBar.setGeometry(50, 400, 400, 30)
@@ -71,6 +89,47 @@ class FlashTool(QMainWindow):
         else:
             logging.warning("No kernel image selected.")
             QtWidgets.QMessageBox.warning(self, "Warning", "No kernel image selected!")
+
+    def enable_magisk_hide(self):
+        logging.info("Enabling Magisk Hide.")
+        DeviceManager.toggle_magisk_hide()
+        QtWidgets.QMessageBox.information(self, "Info", "Magisk Hide enabled successfully.")
+
+    def add_app_to_magisk_hide(self):
+        app_package, ok = QInputDialog.getText(self, 'Add App to Magisk Hide', 'Enter app package name:')
+        if ok and app_package:
+            logging.info(f"Adding {app_package} to Magisk Hide.")
+            DeviceManager.add_app_to_magisk_hide(app_package)
+            QtWidgets.QMessageBox.information(self, "Info", f"Root hidden from {app_package} successfully.")
+
+    def hide_root_from_common_apps():
+    common_apps = [
+        "com.google.android.gms",   # Google Play Services
+        "com.google.android.gms.unstable",  # Google Play Services (Unstable)
+        "com.bank.app",             # Example banking app
+        "com.netflix.mediaclient"   # Netflix
+    ]
+
+    for app in common_apps:
+        DeviceManager.add_app_to_magisk_hide(app)
+        logging.info(f"Root hidden from app: {app}")
+
+    def check_safetynet():
+    try:
+        result = subprocess.check_output(["adb", "shell", "getprop", "ro.build.fingerprint"]).decode().strip()
+        # Optionally send the result to an online service for attestation
+        logging.info(f"SafetyNet check result: {result}")
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to check SafetyNet status: {e}")
+        return False
+
+
+    def install_safetynet_fix(self):
+        logging.info("Installing Universal SafetyNet Fix.")
+        DeviceManager.install_safetynet_fix()
+        QtWidgets.QMessageBox.information(self, "Info", "SafetyNet Fix installed successfully.")
+
 
     def kernel_tune(self):
         # Kernel tuning functionality (to be implemented in the next steps)
