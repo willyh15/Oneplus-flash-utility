@@ -57,3 +57,23 @@
     }
 }
 
+{
+    "oneplus7pro": {
+        "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+        "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
+        "kernel": "https://example.com/kernels/oneplus7pro/boot.img",
+        "roms": [
+            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
+            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
+        ],
+        "rooting_script": {
+            "url": "https://example.com/rooting_scripts/oneplus7pro_root.sh",
+            "commands": [
+                "adb reboot bootloader",
+                "fastboot flash recovery recovery.img",
+                "adb sideload magisk.zip"
+            ]
+        }
+    }
+}
+
