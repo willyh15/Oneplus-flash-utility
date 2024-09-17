@@ -28,7 +28,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile main.py  # Correct command without inline comment
+        pyinstaller --onefile ./main.py  # Explicitly specify the path to main.py
       shell: cmd
 
     - name: Upload executable
