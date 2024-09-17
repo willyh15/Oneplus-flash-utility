@@ -128,6 +128,20 @@ class FlashTool(QMainWindow):
         workflow = WorkflowManager(self.progressBar, device, 'rooting')
         workflow.start()
 
+    def load_logs(self):
+    try:
+        with open('flash_tool.log', 'r') as f:
+            log_content = f.read()
+            self.log_viewer.setPlainText(log_content)
+
+        # Set a timer to refresh the log viewer every second (real-time updates)
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.load_logs)
+        self.timer.start(1000)  # Refresh every 1 second
+    except FileNotFoundError:
+        logging.warning("Log file not found.")
+        self.log_viewer.setPlainText("No logs available.")
+
     def root_with_encryption(self):
         logging.info("Rooting device while preserving encryption.")
         DeviceManager.root_device(preserve_encryption=True)
