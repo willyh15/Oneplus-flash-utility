@@ -15,6 +15,35 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
  @staticmethod
+    def install_magisk_module(module_zip):
+        try:
+            # Push the Magisk module to the device
+            subprocess.run(["adb", "push", module_zip, "/sdcard/"], check=True)
+            # Install the Magisk module (either via TWRP or directly via Magisk)
+            subprocess.run(["adb", "shell", "magisk", "--install-module", f"/sdcard/{os.path.basename(module_zip)}"], check=True)
+            logging.info(f"Installed Magisk module: {module_zip}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to install Magisk module: {e}")
+
+    @staticmethod
+    def remove_magisk_module(module_name):
+        try:
+            # Remove the Magisk module by deleting its folder in /data/adb/modules
+            subprocess.run(["adb", "shell", "rm", "-rf", f"/data/adb/modules/{module_name}"], check=True)
+            logging.info(f"Removed Magisk module: {module_name}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to remove Magisk module: {e}")
+
+    @staticmethod
+    def toggle_magisk_hide():
+        try:
+            # Toggle Magisk Hide using the magisk binary
+            subprocess.run(["adb", "shell", "magiskhide", "toggle"], check=True)
+            logging.info("Toggled Magisk Hide.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to toggle Magisk Hide: {e}")
+
+ @staticmethod
     def backup_device():
         try:
             # Perform a backup using TWRP or ADB (backup system and data)
