@@ -19,6 +19,19 @@ class FlashTool(QMainWindow):
     def init_ui(self):
         self.setWindowTitle("OnePlus 7 Pro Rooting Tool")
         self.setGeometry(300, 300, 600, 400)
+        self.setWindowTitle("User-Friendly Rescue Mode")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Rescue Mode button
+        self.button_rescue_mode = QPushButton(self)
+        self.button_rescue_mode.setText("One-Click Rescue Mode")
+        self.button_rescue_mode.setGeometry(50, 90, 400, 30)
+        self.button_rescue_mode.clicked.connect(self.enter_rescue_mode)
 
         # Dropdown for device selection
         self.device_dropdown = QComboBox(self)
@@ -53,6 +66,14 @@ class FlashTool(QMainWindow):
         device = self.device_dropdown.currentText()
         workflow = WorkflowManager(self.progressBar, device, 'rooting')
         workflow.start()
+
+    def enter_rescue_mode(self):
+        logging.info("Entering Rescue Mode.")
+        success = DeviceManager.enter_rescue_mode()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Info", "Rescue mode completed successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Failed to enter rescue mode. Check logs for details.")
 
     def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")
