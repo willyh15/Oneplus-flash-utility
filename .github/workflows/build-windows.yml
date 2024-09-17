@@ -28,8 +28,10 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile ./main.py  # Explicitly specify the path to main.py
-      shell: cmd
+        pyinstaller --onefile main.py
+
+    - name: List files in repository for debugging
+      run: dir
 
     - name: Upload executable
       uses: actions/upload-artifact@v3  # Upload the generated .exe file as an artifact using v3
