@@ -25,51 +25,31 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-qt py  # Removed pytest-memory-profiler
+        pip install pytest pytest-qt py
 
-    # Run Unit Tests
+    - name: List test files for debugging
+      run: |
+        ls -R tests
+      shell: bash
+
     - name: Run Unit Tests
       run: |
-        python -m pytest tests/unit --disable-warnings --maxfail=1
+        python -m pytest tests --disable-warnings --maxfail=1
       shell: bash
 
-    # Run GUI Tests
-    - name: Run GUI Tests
+    - name: Build executable with PyInstaller
       run: |
-        python -m pytest tests/gui --disable-warnings --maxfail=1
-      shell: bash
+        pyinstaller --onefile main.py
 
-    # Build executable with PyInstaller including debug logs
-    - name: Build executable with PyInstaller (with debugging)
-      run: |
-        pyinstaller --onefile --log-level=DEBUG main.py
-      shell: bash
-
-    # Run the .exe file and capture output for debugging
-    - name: Run the .exe and capture output (for debugging)
-      run: |
-        dist\\main.exe > exe_output.log 2>&1 || echo "Execution failed, check logs."
-      shell: cmd
-
-    # Upload log files for debugging
-    - name: Upload log files for debugging
-      uses: actions/upload-artifact@v3
-      with:
-        name: exe-output-log
-        path: exe_output.log
-
-    # Inno Setup for building installer
     - name: Download Inno Setup
       run: |
         curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-      shell: bash
 
     - name: Install Inno Setup
       run: |
         .\innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
       shell: cmd
 
-    # Create the Inno Setup script for building the installer
     - name: Create Inno Setup script
       run: |
         echo "[Setup]" > installer.iss
@@ -86,13 +66,11 @@ jobs:
         echo "Filename: \"{app}\\main.exe\"; Description: \"Launch OnePlus 7 Pro Tool\"; Flags: nowait postinstall skipifsilent" >> installer.iss
       shell: bash
 
-    # Build the installer with Inno Setup
     - name: Build Installer with Inno Setup
       run: |
         "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
       shell: cmd
 
-    # Upload the generated installer
     - name: Upload installer
       uses: actions/upload-artifact@v3
       with:
