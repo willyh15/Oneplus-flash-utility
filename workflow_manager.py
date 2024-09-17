@@ -4,11 +4,13 @@ import time
 import json
 
 class WorkflowManager:
-    def __init__(self, progressBar, device, workflow_type, custom_rom=None):
+    def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None, system_img=None):
         self.progressBar = progressBar
         self.device = device
         self.workflow_type = workflow_type
-        self.custom_rom = custom_rom
+        self.boot_img = boot_img
+        self.vendor_img = vendor_img
+        self.system_img = system_img
         self.load_workflow()
 
     def load_workflow(self):
@@ -38,26 +40,12 @@ class WorkflowManager:
             logging.info(f"{self.workflow_type} completed successfully!")
 
     def execute_step(self, step):
-        if step == "boot_into_twrp":
-            DeviceManager.reboot_to_bootloader()
-        elif step == "wipe_data":
-            DeviceManager.backup_partitions()
-            # Assume wipe data logic here
-        elif step == "flash_magisk":
-            version, url = DeviceManager.get_latest_magisk_version()
-            if url:
-                # Flash Magisk (code to download and flash Magisk here)
-                logging.info(f"Magisk flashed: {url}")
-        elif step == "flash_custom_rom" and self.custom_rom:
-            DeviceManager.flash_recovery(self.custom_rom)
-        elif step == "decrypt_storage":
-            if DeviceManager.is_storage_encrypted():
-                # Flash decryption tool here
-                logging.info("Storage decrypted successfully")
-            else:
-                logging.info("Storage is already decrypted")
-        elif step == "enter_edl_mode":
-            DeviceManager.enter_edl_mode()
+        if step == "flash_boot_partition" and self.boot_img:
+            DeviceManager.flash_partition(self.boot_img, "boot")
+        elif step == "flash_vendor_partition" and self.vendor_img:
+            DeviceManager.flash_partition(self.vendor_img, "vendor")
+        elif step == "flash_system_partition" and self.system_img:
+            DeviceManager.flash_partition(self.system_img, "system")
         else:
             logging.warning(f"Unknown step: {step}")
             return False
