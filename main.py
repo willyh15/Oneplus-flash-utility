@@ -80,6 +80,26 @@ class FlashTool(QMainWindow):
         self.button_kernel_tune.setGeometry(50, 130, 400, 30)
         self.button_kernel_tune.clicked.connect(self.kernel_tune)
 
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Apply Decryption button
+        self.button_decrypt_device = QPushButton(self)
+        self.button_decrypt_device.setText("Apply Decryption Tool")
+        self.button_decrypt_device.setGeometry(50, 90, 400, 30)
+        self.button_decrypt_device.clicked.connect(self.apply_decryption)
+
+    def apply_decryption(self):
+        logging.info(f"Starting decryption process for device.")
+        success = DeviceManager.apply_decryption_tool()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Info", "Decryption applied successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Failed to apply decryption tool. Check logs for details.")
+
+
     def flash_kernel(self):
         kernel_image = QFileDialog.getOpenFileName(self, "Select Kernel Image", "", "Image files (*.img)")[0]
         if kernel_image:
