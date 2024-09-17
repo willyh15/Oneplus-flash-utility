@@ -112,6 +112,16 @@ class FlashTool(QMainWindow):
         # Present current CPU frequency and I/O scheduler settings (to be expanded)
         QtWidgets.QMessageBox.information(self, "Info", "Kernel tuning feature coming soon!")
 
+     # Define the flash_kernel method
+    def flash_kernel(self):
+        kernel_img = QFileDialog.getOpenFileName(self, "Select Custom Kernel Image", "", "Image files (*.img)")[0]
+        if kernel_img:
+            success = DeviceManager.flash_kernel(kernel_img)
+            if success:
+                QtWidgets.QMessageBox.information(self, "Info", "Custom kernel flashed successfully.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "Kernel flashing failed. Check logs for details.")
+
     # Add the install_custom_rom method
     def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
