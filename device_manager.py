@@ -3,13 +3,31 @@ import requests
 import logging
 
 class DeviceManager:
-    @staticmethod
+   @staticmethod
     def reboot_to_bootloader():
         try:
             subprocess.run(["adb", "reboot", "bootloader"], check=True)
             logging.info("Rebooted to bootloader")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
+
+     @staticmethod
+    def get_latest_release(repo_url):
+        try:
+            api_url = f"https://api.github.com/repos/{repo_url}/releases/latest"
+            response = requests.get(api_url)
+            if response.status_code == 200:
+                latest_release = response.json()
+                version = latest_release['tag_name']
+                download_url = latest_release['assets'][0]['browser_download_url']
+                logging.info(f"Latest release for {repo_url}: {version}")
+                return version, download_url
+            else:
+                logging.warning(f"Failed to fetch latest release from {repo_url}. Status code: {response.status_code}")
+                return None, None
+        except Exception as e:
+            logging.error(f"Error fetching latest release: {e}")
+            return None, None
 
     @staticmethod
     def detect_encryption_type():
