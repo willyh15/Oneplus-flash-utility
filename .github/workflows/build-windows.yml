@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2  # Set up a Python environment
       with:
-        python-version: '3.12'  # Specify the Python version you need
+        python-version: '3.10'  # Use Python 3.10, compatible with PyQt5==5.15.7
 
     - name: Install dependencies
       run: |
@@ -28,7 +28,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile main.py  # Build the project into a single .exe
+        pyinstaller --onefile main.py  # Correct command without inline comment
       shell: cmd
 
     - name: Upload executable
