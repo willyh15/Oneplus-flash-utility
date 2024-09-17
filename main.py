@@ -64,6 +64,21 @@ class FlashTool(QMainWindow):
         else:
             QtWidgets.QMessageBox.critical(self, "Error", "No device detected!")
 
+    def download_rom(self):
+    if self.device_profile and "roms" in self.device_profile:
+        rom_urls = [rom["url"] for rom in self.device_profile["roms"]]
+        selected_rom_url = self.select_rom(rom_urls)
+        if selected_rom_url:
+            save_path = QFileDialog.getSaveFileName(self, "Save ROM As", "", "Zip files (*.zip)")[0]
+            if save_path:
+                success = DeviceManager.download_firmware(selected_rom_url, save_path)
+                if success:
+                    QtWidgets.QMessageBox.information(self, "Info", "ROM downloaded successfully.")
+    else:
+        logging.warning("No ROMs available for the detected device.")
+        QtWidgets.QMessageBox.warning(self, "Warning", "No ROMs available for this device!")
+
+
     def download_firmware(self):
         if self.device_profile and "stock_firmware" in self.device_profile:
             firmware_url = self.device_profile["stock_firmware"]["url"]
