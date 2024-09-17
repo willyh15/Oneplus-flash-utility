@@ -1,4 +1,4 @@
-name: Build Windows Executable
+name: Build Windows Installer
 
 on:
   push:
@@ -30,11 +30,32 @@ jobs:
       run: |
         pyinstaller --onefile main.py
 
-    - name: List files in repository for debugging
-      run: dir
+    - name: Download Inno Setup
+      run: |
+        curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe  # Download Inno Setup installer
+        Start-Process -Wait innosetup.exe /VERYSILENT  # Install Inno Setup silently
 
-    - name: Upload executable
-      uses: actions/upload-artifact@v3  # Upload the generated .exe file as an artifact using v3
+    - name: Create Inno Setup script
+      run: |
+        echo [Setup] > installer.iss
+        echo AppName=OnePlus 7 Pro Tool >> installer.iss
+        echo AppVersion=1.0 >> installer.iss
+        echo DefaultDirName={autopf}\\OnePlus 7 Pro Tool >> installer.iss
+        echo OutputDir=dist >> installer.iss
+        echo OutputBaseFilename=OnePlus7Pro_Tool_Installer >> installer.iss
+        echo [Files] >> installer.iss
+        echo Source: "dist\\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+        echo [Icons] >> installer.iss
+        echo Name: "{group}\\OnePlus 7 Pro Tool"; Filename: "{app}\\main.exe" >> installer.iss
+        echo [Run] >> installer.iss
+        echo Filename: "{app}\\main.exe"; Description: "Launch OnePlus 7 Pro Tool"; Flags: nowait postinstall skipifsilent >> installer.iss
+
+    - name: Build Installer with Inno Setup
+      run: |
+        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" installer.iss  # Compile the installer
+
+    - name: Upload installer
+      uses: actions/upload-artifact@v3
       with:
-        name: oneplus7pro-tool  # Name of the uploaded artifact
-        path: dist/main.exe  # Path to the .exe file in the dist directory created by PyInstaller
+        name: oneplus7pro-tool-installer
+        path: dist/OnePlus7Pro_Tool_Installer.exe
