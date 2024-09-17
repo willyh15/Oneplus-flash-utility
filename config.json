@@ -26,3 +26,34 @@
     }
 }
 
+{
+    "oneplus7pro": {
+        "stock_firmware": {
+            "url": "https://example.com/oneplus7pro/stock_firmware.zip",
+            "md5": "abc12345def67890"
+        },
+        "roms": [
+            {"name": "LineageOS", "url": "https://download.lineageos.org/guacamoleb"},
+            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/guacamoleb"}
+        ],
+        "kernel": {
+            "url": "https://example.com/kernels/oneplus7pro/boot.img",
+            "md5": "9876543210abcdef"
+        }
+    },
+    "pixel5": {
+        "stock_firmware": {
+            "url": "https://example.com/pixel5/stock_firmware.zip",
+            "md5": "abcdef1234567890"
+        },
+        "roms": [
+            {"name": "LineageOS", "url": "https://download.lineageos.org/redfin"},
+            {"name": "PixelExperience", "url": "https://download.pixelexperience.org/redfin"}
+        ],
+        "kernel": {
+            "url": "https://example.com/kernels/pixel5/boot.img",
+            "md5": "1122334455667788"
+        }
+    }
+}
+
