@@ -14,6 +14,10 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def install_adb_driver_linux():
+        logging.info("Please install ADB using your package manager. For example: sudo apt install adb")
+
+   @staticmethod
     def check_edl_mode():
         try:
             if platform.system() == "Windows":
