@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import requests
 import platform
@@ -12,6 +13,51 @@ class DeviceManager:
             logging.info("Rebooted to bootloader")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
+
+   @staticmethod
+    def download_firmware(firmware_url, save_path):
+        try:
+            # Download the firmware file from the URL
+            logging.info(f"Downloading firmware from: {firmware_url}")
+            response = requests.get(firmware_url, stream=True)
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(1024):
+                    if chunk:
+                        f.write(chunk)
+            logging.info(f"Firmware downloaded to: {save_path}")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to download firmware: {e}")
+            return False
+
+    @staticmethod
+    def verify_checksum(file_path, expected_checksum):
+        # Verify file integrity using MD5 checksum
+        try:
+            md5_hash = hashlib.md5()
+            with open(file_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    md5_hash.update(byte_block)
+            file_md5 = md5_hash.hexdigest()
+            logging.info(f"Calculated MD5 checksum: {file_md5}")
+            return file_md5 == expected_checksum
+        except FileNotFoundError as e:
+            logging.error(f"File not found for checksum verification: {e}")
+            return False
+
+    @staticmethod
+    def download_and_verify_firmware(firmware_url, save_path, expected_checksum):
+        # Download firmware and verify the integrity
+        if DeviceManager.download_firmware(firmware_url, save_path):
+            if DeviceManager.verify_checksum(save_path, expected_checksum):
+                logging.info("Firmware verified successfully.")
+                return True
+            else:
+                logging.error("Firmware checksum mismatch! The file may be corrupted.")
+                return False
+        else:
+            logging.error("Failed to download firmware.")
+            return False
 
    @staticmethod
     def check_adb_driver():
