@@ -15,6 +15,19 @@ class DeviceManager:
             logging.error(f"Failed to reboot to bootloader: {e}")
 
    @staticmethod
+    def run_rooting_script(device_profile):
+        try:
+            if "rooting_script" in device_profile:
+                script_commands = device_profile["rooting_script"]["commands"]
+                for command in script_commands:
+                    subprocess.run(command.split(), check=True)
+                logging.info(f"Executed rooting script for {device_profile}")
+            else:
+                logging.warning("No rooting script found for this device.")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to run rooting script: {e}")
+
+   @staticmethod
     def download_firmware(firmware_url, save_path):
         try:
             # Download the firmware file from the URL
