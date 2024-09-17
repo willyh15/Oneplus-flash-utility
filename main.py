@@ -36,6 +36,46 @@ class FlashTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("Rooting Tool with Universal Support")
         self.setGeometry(300, 300, 800, 600)
+        self.setWindowTitle("OnePlus 7 Pro Rooting Tool")
+        self.setGeometry(300, 300, 800, 600)
+
+        # Dropdown for device selection
+        self.device_dropdown = QComboBox(self)
+        self.device_dropdown.setGeometry(50, 50, 400, 30)
+        self.device_dropdown.addItem("OnePlus 7 Pro")
+        self.device_dropdown.addItem("Pixel 5")
+
+        # Progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(50, 400, 400, 30)
+        self.progressBar.setValue(0)
+
+        # Flash Kernel button
+        self.button_flash_kernel = QPushButton(self)
+        self.button_flash_kernel.setText("Flash Custom Kernel")
+        self.button_flash_kernel.setGeometry(50, 90, 400, 30)
+        self.button_flash_kernel.clicked.connect(self.flash_kernel)
+
+        # Kernel Tuning button
+        self.button_kernel_tune = QPushButton(self)
+        self.button_kernel_tune.setText("Kernel Tuning")
+        self.button_kernel_tune.setGeometry(50, 130, 400, 30)
+        self.button_kernel_tune.clicked.connect(self.kernel_tune)
+
+    def flash_kernel(self):
+        kernel_image = QFileDialog.getOpenFileName(self, "Select Kernel Image", "", "Image files (*.img)")[0]
+        if kernel_image:
+            logging.info(f"Selected kernel image: {kernel_image}")
+            DeviceManager.flash_kernel(kernel_image)
+            QtWidgets.QMessageBox.information(self, "Info", "Kernel flashed successfully.")
+        else:
+            logging.warning("No kernel image selected.")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No kernel image selected!")
+
+    def kernel_tune(self):
+        # Kernel tuning functionality (to be implemented in the next steps)
+        QtWidgets.QMessageBox.information(self, "Info", "Kernel tuning feature coming soon!")
+
 
         # Progress bar
         self.progressBar = QProgressBar(self)
