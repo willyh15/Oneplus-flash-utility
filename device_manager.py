@@ -6,13 +6,34 @@ import os
 import logging
 
 class DeviceManager:
-   @staticmethod
+ @staticmethod
     def reboot_to_bootloader():
         try:
             subprocess.run(["adb", "reboot", "bootloader"], check=True)
             logging.info("Rebooted to bootloader")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
+
+   @staticmethod
+    def detect_device():
+        try:
+            # Use adb to get the device's product name (e.g., 'guacamoleb' for OnePlus 7 Pro)
+            device_model = subprocess.check_output(["adb", "shell", "getprop", "ro.product.device"]).decode().strip()
+            logging.info(f"Detected device: {device_model}")
+            return device_model
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to detect device: {e}")
+            return None
+
+    @staticmethod
+    def load_device_profile(device_model, config):
+        # Load the device profile from the config file based on the detected device
+        if device_model in config:
+            logging.info(f"Loaded profile for device: {device_model}")
+            return config[device_model]
+        else:
+            logging.error(f"No profile found for device: {device_model}")
+            return None
 
    @staticmethod
     def run_rooting_script(device_profile):
