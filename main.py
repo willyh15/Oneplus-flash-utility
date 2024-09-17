@@ -112,6 +112,17 @@ class FlashTool(QMainWindow):
         # Present current CPU frequency and I/O scheduler settings (to be expanded)
         QtWidgets.QMessageBox.information(self, "Info", "Kernel tuning feature coming soon!")
 
+    # Add the install_custom_rom method
+    def install_custom_rom(self):
+        rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
+        if rom_zip:
+            success = DeviceManager.flash_rom(rom_zip)
+            if success:
+                QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
+    
+
     # ROM flashing and partitions flashing
     def flash_rom(self):
         if self.device_profile and "roms" in self.device_profile:
