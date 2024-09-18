@@ -1,50 +1,25 @@
-import pytest
-from PyQt5.QtWidgets import QApplication
-from main import FlashTool
+import unittest
+from unittest.mock import patch
+from device_manager import DeviceManager
 
-# Required for running PyQt app tests
-@pytest.fixture(scope='module')
-def app():
-    app = QApplication([])
-    return app
+class TestDeviceManager(unittest.TestCase):
 
-@pytest.fixture(scope='function')
-def qtbot(app, request):
-    bot = qtbot(app)
-    request.addfinalizer(bot.cleanup)
-    return bot
+    @patch('builtins.open', unittest.mock.mock_open(read_data="dummy content"))
+    @patch('os.path.exists', return_value=True)
+    @patch('device_manager.hashlib')
+    def test_verify_image(self, mock_hashlib, mock_exists):
+        # Mock the hashlib to avoid computing real checksums
+        mock_hash = mock_hashlib.sha256.return_value
+        mock_hash.hexdigest.return_value = 'fakechecksum'
 
-def test_initial_ui_state(qtbot):
-    """Test the initial state of the FlashTool UI."""
-    window = FlashTool()
-    
-    # Using qtbot to add the window for interaction
-    qtbot.addWidget(window)
-    
-    # Check window properties
-    assert window.windowTitle() == "Rooting & Rescue Tool"
-    assert window.device_dropdown.count() == 2  # Check if two devices are listed
-    assert window.progressBar.value() == 0  # Progress bar should start at 0
+        result = DeviceManager.verify_image('dummy.img')
+        self.assertTrue(result)
 
-def test_device_selection(qtbot):
-    """Test the device dropdown interaction."""
-    window = FlashTool()
-    qtbot.addWidget(window)
-    
-    # Select the second device in the dropdown
-    window.device_dropdown.setCurrentIndex(1)
-    assert window.device_dropdown.currentText() == "Pixel 5"
+    @patch('subprocess.run')
+    def test_flash_rom(self, mock_subprocess):
+        mock_subprocess.return_value = True  # Simulate success
+        result = DeviceManager.flash_rom("dummy_rom.zip")
+        self.assertTrue(result)  # Check if it returns True
 
-def test_rom_installation(qtbot, monkeypatch):
-    """Test ROM installation by simulating the ROM selection."""
-    window = FlashTool()
-    qtbot.addWidget(window)
-    
-    # Mock the QFileDialog to return a fixed file path
-    monkeypatch.setattr('PyQt5.QtWidgets.QFileDialog.getOpenFileName', lambda *args: ("test_rom.zip", ""))
-    
-    # Simulate the click on the "Install Custom ROM" button
-    qtbot.mouseClick(window.findChild(QtWidgets.QPushButton, "Install Custom ROM"), QtCore.Qt.LeftButton)
-    
-    # You would assert whatever behavior occurs after the ROM is installed (e.g., log, message box, etc.)
-    assert "Custom ROM installed successfully." in window.statusBar().currentMessage()
+if __name__ == '__main__':
+    unittest.main()
