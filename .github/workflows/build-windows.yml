@@ -8,6 +8,8 @@ on:
     branches:
       - main
 
+
+
 jobs:
   build:
     runs-on: windows-latest
@@ -38,9 +40,20 @@ jobs:
         python -m pytest tests --disable-warnings --maxfail=1
       shell: bash
 
-    - name: Build executable with PyInstaller
+    - name: Build executable with PyInstaller (Debug Mode)
       run: |
-        pyinstaller --onefile main.py
+        pyinstaller --onefile --debug=all main.py
+
+    - name: Run the .exe and capture console output
+      run: |
+        ./dist/main.exe > output.log 2>&1 || echo "The app crashed"
+      shell: bash
+
+    - name: Upload output log
+      uses: actions/upload-artifact@v3
+      with:
+        name: console-output
+        path: output.log
 
     - name: Download Inno Setup
       run: |
