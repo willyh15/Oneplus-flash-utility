@@ -25,7 +25,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-qt py
+        pip install pytest pytest-qt pytest-xdist py
 
     - name: List test files for debugging
       run: |
@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Unit Tests
       run: |
-        python -m pytest tests --disable-warnings --maxfail=1
+        python -m pytest tests --disable-warnings --maxfail=1 -n 2
       shell: bash
 
     - name: Build executable with PyInstaller
@@ -67,6 +67,7 @@ jobs:
       shell: bash
 
     - name: Build Installer with Inno Setup
+      if: success()
       run: |
         "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
       shell: cmd
