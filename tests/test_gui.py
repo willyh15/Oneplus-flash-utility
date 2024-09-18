@@ -8,6 +8,12 @@ def app():
     app = QApplication([])
     return app
 
+@pytest.fixture(scope='function')
+def qtbot(app, request):
+    bot = qtbot(app)
+    request.addfinalizer(bot.cleanup)
+    return bot
+
 def test_initial_ui_state(qtbot):
     """Test the initial state of the FlashTool UI."""
     window = FlashTool()
@@ -41,5 +47,4 @@ def test_rom_installation(qtbot, monkeypatch):
     qtbot.mouseClick(window.findChild(QtWidgets.QPushButton, "Install Custom ROM"), QtCore.Qt.LeftButton)
     
     # You would assert whatever behavior occurs after the ROM is installed (e.g., log, message box, etc.)
-    # For simplicity, let's assume it logs the success
     assert "Custom ROM installed successfully." in window.statusBar().currentMessage()
