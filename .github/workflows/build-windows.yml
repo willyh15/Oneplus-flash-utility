@@ -32,9 +32,10 @@ jobs:
         ls -R tests
       shell: bash
 
+    # Update to run tests sequentially for better memory usage
     - name: Run Unit Tests
       run: |
-        python -m pytest tests --disable-warnings --maxfail=1 -n 2
+        python -m pytest tests --disable-warnings --maxfail=1
       shell: bash
 
     - name: Build executable with PyInstaller
