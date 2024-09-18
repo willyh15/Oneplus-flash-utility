@@ -34,8 +34,10 @@ class DeviceManager:
             logging.info(f"Starting to flash ROM: {rom_path}")
             subprocess.run(["adb", "sideload", rom_path], check=True)
             logging.info("ROM flashing completed successfully.")
+            return True  # Ensure the function returns True on success
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to flash ROM: {e}")
+            return False  # Return False if there is an error
 
     @staticmethod
     def flash_kernel(kernel_image):
