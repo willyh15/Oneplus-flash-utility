@@ -6,6 +6,7 @@ import sys
 from device_manager import DeviceManager
 from workflow_manager import WorkflowManager
 import warnings
+import subprocess
 
 # Configure logging
 logging.basicConfig(
@@ -17,8 +18,13 @@ logging.basicConfig(
 # Suppress DeprecationWarning
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# Initialize logging
-logging.basicConfig(filename='flash_tool.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Function to log uncaught exceptions
+def exception_hook(exc_type, exc_value, exc_traceback):
+    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    sys.exit(1)
+
+# Hook up uncaught exceptions
+sys.excepthook = exception_hook
 
 # Load configuration
 def load_config():
@@ -114,12 +120,11 @@ class FlashTool(QMainWindow):
         button.setText(label)
         button.setGeometry(50, y_position, 400, 30)
         button.clicked.connect(function)
+
     # Kernel tuning feature
     def kernel_tune(self):
-        # Present current CPU frequency and I/O scheduler settings (to be expanded)
         QtWidgets.QMessageBox.information(self, "Info", "Kernel tuning feature coming soon!")
 
-     # Define the flash_kernel method
     def flash_kernel(self):
         kernel_img = QFileDialog.getOpenFileName(self, "Select Custom Kernel Image", "", "Image files (*.img)")[0]
         if kernel_img:
@@ -129,7 +134,6 @@ class FlashTool(QMainWindow):
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", "Kernel flashing failed. Check logs for details.")
 
-    # Add the install_custom_rom method
     def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
         if rom_zip:
@@ -138,20 +142,8 @@ class FlashTool(QMainWindow):
                 QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
-    
-
-    # ROM flashing and partitions flashing
-    def flash_rom(self):
-        if self.device_profile and "roms" in self.device_profile:
-            rom_urls = [rom["url"] for rom in self.device_profile["roms"]]
-            selected_rom_url = self.select_rom(rom_urls)
-            if selected_rom_url:
-                DeviceManager.flash_rom(selected_rom_url)
-        else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No ROMs available for this device!")
 
     def flash_partitions(self):
-        # Ask user to select the partition files
         boot_img = QFileDialog.getOpenFileName(self, "Select boot.img", "", "Image files (*.img)")[0]
         vendor_img = QFileDialog.getOpenFileName(self, "Select vendor.img", "", "Image files (*.img)")[0]
         system_img = QFileDialog.getOpenFileName(self, "Select system.img", "", "Image files (*.img)")[0]
@@ -162,7 +154,6 @@ class FlashTool(QMainWindow):
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", "No partitions selected for flashing!")
 
-    # Rooting functionality
     def root_with_encryption(self):
         DeviceManager.root_device(preserve_encryption=True)
         QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
@@ -171,7 +162,6 @@ class FlashTool(QMainWindow):
         DeviceManager.root_device(preserve_encryption=False)
         QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
 
-    # Rescue mode
     def enter_rescue_mode(self):
         success = DeviceManager.enter_rescue_mode()
         if success:
@@ -179,7 +169,6 @@ class FlashTool(QMainWindow):
         else:
             QtWidgets.QMessageBox.critical(self, "Error", "Failed to enter rescue mode. Check logs for details.")
 
-    # OTA update and backup
     def backup_before_ota(self):
         success = DeviceManager.backup_device()
         if success:
@@ -201,7 +190,6 @@ class FlashTool(QMainWindow):
                 QtWidgets.QMessageBox.critical(self, "Error", "OTA Update failed. Restoring from backup.")
                 DeviceManager.restore_device()
 
-    # Logcat management
     def toggle_logcat(self):
         if self.logcat_thread is None:
             self.start_logcat()
@@ -210,7 +198,7 @@ class FlashTool(QMainWindow):
 
     def start_logcat(self):
         self.button_logcat.setText("Stop Logcat")
-        self.log_viewer.clear()  # Clear previous logs
+        self.log_viewer.clear()
         self.logcat_thread = LogcatThread()
         self.logcat_thread.new_log.connect(self.update_log_viewer)
         self.logcat_thread.start()
@@ -224,7 +212,6 @@ class FlashTool(QMainWindow):
     def update_log_viewer(self, log_line):
         self.log_viewer.append(log_line)
 
-
 # Main application runner
 def application():
     app = QApplication(sys.argv)
@@ -232,10 +219,8 @@ def application():
     window.show()
     sys.exit(app.exec_())
 
-
 if __name__ == "__main__":
     try:
         application()
     except Exception as e:
         logging.exception("An unexpected error occurred.")
-
