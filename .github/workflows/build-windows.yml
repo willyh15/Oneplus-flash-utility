@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use ubuntu instead of windows for this step
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -25,13 +25,12 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-glx  # This installs libGL.so.1
+        sudo apt-get install -y libgl1-mesa-glx
 
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-qt pytest-xdist py
 
     - name: List test files for debugging
       run: |
