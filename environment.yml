@@ -1,0 +1,13 @@
+name: oneplus-flash-utility
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pyqt=5.15.7
+  - pyinstaller=6.10.0
+  - requests=2.28.1
+  - pytest=8.3.3
+  - pytest-qt=4.0.2
+  - pytest-xdist=3.6.1
+  - py=1.11.0
+  - libgl1  # for libGL.so.1 dependency
