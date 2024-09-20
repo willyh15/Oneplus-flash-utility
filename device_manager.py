@@ -1,7 +1,5 @@
 import hashlib
 import subprocess
-import requests
-import platform
 import os
 import logging
 
