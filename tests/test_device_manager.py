@@ -43,8 +43,9 @@ class TestDeviceManager(unittest.TestCase):
         DeviceManager.flash_partition("dummy.img", "system")
         mock_subprocess.assert_called_once_with(["fastboot", "flash", "system", "dummy.img"], check=True)
 
-    @patch('subprocess.run')
-    def test_flash_kernel(self, mock_subprocess):
+     @patch('subprocess.run')
+     @patch('device_manager.DeviceManager.verify_image', return_value=True)
+    def test_flash_kernel(self, mock_verify_image, mock_subprocess):
         mock_subprocess.return_value = True
         DeviceManager.flash_kernel("dummy_kernel.img")
         mock_subprocess.assert_called_once_with(["adb", "reboot", "bootloader"], check=True)
