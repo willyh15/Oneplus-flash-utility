@@ -41,9 +41,7 @@ class WorkflowManager:
             self.workflows = {}
 
     def start(self):
-        """
-        Starts the workflow by executing each step and updating the progress bar.
-        """
+        """Starts the workflow by executing each step and updating the progress bar."""
         steps = self.workflows.get(self.workflow_type, [])
         if not steps:
             logging.error(f"No steps found for workflow type: {self.workflow_type}")
