@@ -25,6 +25,7 @@ class WorkflowManager:
         self.workflows = {}
         self.load_workflow()
 
+
     def load_workflow(self):
         """
         Loads the workflow steps from the 'workflows.json' file based on the 
@@ -40,6 +41,7 @@ class WorkflowManager:
         except json.JSONDecodeError as e:
             logging.error(f"Error decoding workflows.json: {e}")
             self.workflows = {}
+
 
     def start(self):
         """Starts the workflow by executing each step and updating the progress bar."""
@@ -66,6 +68,7 @@ class WorkflowManager:
             logging.info(f"{self.workflow_type} workflow completed successfully!")
         else:
             logging.error(f"{self.workflow_type} workflow did not complete successfully.")
+
 
     def execute_step(self, step):
         """
