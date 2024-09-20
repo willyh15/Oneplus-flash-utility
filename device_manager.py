@@ -293,9 +293,8 @@ class DeviceManager:
                 return True
             logging.error("Firmware checksum mismatch! The file may be corrupted.")
             return False
-        else:
-            logging.error("Failed to download firmware.")
-            return False
+        logging.error("Failed to download firmware.")
+        return False
 
     # --------------- Device Detection ---------------
     @staticmethod
