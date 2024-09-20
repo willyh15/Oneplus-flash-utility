@@ -203,12 +203,3 @@ class DeviceManager:
             logging.info("Entered EDL mode for recovery.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to enter EDL mode: {e}")
-
-    # --------------- Rescue Mode and EDL Mode ---------------
-    @staticmethod
-    def enter_edl_mode():
-        try:
-            subprocess.run(["adb", "reboot-edl"], check=True)
-            logging.info("Entered EDL mode for recovery.")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to enter EDL mode: {e}")
