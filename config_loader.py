@@ -4,10 +4,10 @@ import logging
 def load_config(config_file='config.json'):
     """
     Loads configuration from a JSON file.
-    
+
     Args:
         config_file (str): The path to the configuration file (default: 'config.json').
-    
+
     Returns:
         dict: The loaded configuration as a dictionary. Returns an empty dictionary if an error occurs.
     """
