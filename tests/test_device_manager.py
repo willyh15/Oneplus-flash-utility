@@ -52,10 +52,12 @@ class TestDeviceManager(unittest.TestCase):
     def test_flash_kernel(self, mock_verify_image, mock_subprocess):
         mock_subprocess.return_value = True
         DeviceManager.flash_kernel("dummy_kernel.img")
-        mock_subprocess.assert_called_once_with(["adb", "reboot", "bootloader"], check=True)
-        mock_subprocess.assert_called_once_with(["fastboot", "flash", "boot", "dummy_kernel.img"], check=True)
+        # Assert the two calls to subprocess.run
+        mock_subprocess.assert_any_call(["adb", "reboot", "bootloader"], check=True)
+        mock_subprocess.assert_any_call(["fastboot", "flash", "boot", "dummy_kernel.img"], check=True)
         # Check for the expected log message
         self.assertIn("Flashed kernel: dummy_kernel.img", logging.getLogger().handlers[0].messages)
+
 
 if __name__ == '__main__':
     unittest.main()
