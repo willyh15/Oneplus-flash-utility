@@ -47,8 +47,8 @@ class TestDeviceManager(unittest.TestCase):
         # Check for the expected log message
         self.assertIn("Flashed system partition with dummy.img", logging.getLogger().handlers[0].messages)
 
+    @patch('subprocess.run')  # Patch subprocess.run first
     @patch('device_manager.DeviceManager.verify_image', return_value=True)
-    @patch('subprocess.run')  # Indentation fixed
     def test_flash_kernel(self, mock_verify_image, mock_subprocess):
         mock_subprocess.return_value = True
         DeviceManager.flash_kernel("dummy_kernel.img")
@@ -57,6 +57,7 @@ class TestDeviceManager(unittest.TestCase):
         mock_subprocess.assert_any_call(["fastboot", "flash", "boot", "dummy_kernel.img"], check=True)
         # Check for the expected log message
         self.assertIn("Flashed kernel: dummy_kernel.img", logging.getLogger().handlers[0].messages)
+
 
 
 if __name__ == '__main__':
