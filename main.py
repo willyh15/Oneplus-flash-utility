@@ -1,7 +1,8 @@
 import logging
 import json
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QComboBox, QProgressBar, QTextEdit
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
+                             QComboBox, QProgressBar, QTextEdit)
 import sys
 from device_manager import DeviceManager
 from workflow_manager import WorkflowManager
