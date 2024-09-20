@@ -24,6 +24,16 @@
                 "name": "PixelExperience",
                 "repo_url": "PixelExperience/android_device_oneplus_guacamoleb",
                 "url": "https://download.pixelexperience.org/guacamoleb"
+            },
+            {
+                "name": "crDroid",
+                "repo_url": "https://github.com/crdroidandroid/android_device_oneplus_guacamoleb",
+                "url": "https://sourceforge.net/projects/crdroid/files/guacamoleb/"
+            },
+            {
+                "name": "Paranoid Android",
+                "repo_url": "https://github.com/AOSPA/android_device_oneplus_guacamoleb",
+                "url": "https://paranoidandroid.co/downloads/"
             }
         ],
         "rooting_script": {
@@ -36,14 +46,14 @@
         }
     },
     "pixel5": {
-        "twrp": "https://example.com/twrp_pixel5.img",
+        "twrp": "https://dl.twrp.me/redfin",
         "magisk": "https://github.com/topjohnwu/Magisk/releases/latest",
         "kernel": {
-            "url": "https://example.com/kernels/pixel5/boot.img",
+            "url": "https://androidfilehost.com/?fid=example",
             "md5": "1122334455667788"
         },
         "stock_firmware": {
-            "url": "https://example.com/pixel5/stock_firmware.zip",
+            "url": "https://dl.google.com/dl/android/aosp/redfin-ota-abc123.zip",
             "md5": "abcdef1234567890"
         },
         "roms": [
@@ -54,6 +64,14 @@
             {
                 "name": "PixelExperience",
                 "url": "https://download.pixelexperience.org/redfin"
+            },
+            {
+                "name": "crDroid",
+                "url": "https://sourceforge.net/projects/crdroid/files/redfin/"
+            },
+            {
+                "name": "Paranoid Android",
+                "url": "https://paranoidandroid.co/downloads/"
             }
         ]
     }
