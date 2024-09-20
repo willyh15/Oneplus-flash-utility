@@ -4,7 +4,8 @@ import time
 import json
 
 class WorkflowManager:
-    def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None, system_img=None):
+def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None,
+                 system_img=None):
         """
         Initializes the WorkflowManager with necessary data for executing the workflow.
 
