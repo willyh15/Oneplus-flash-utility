@@ -110,11 +110,11 @@ class FlashTool(QMainWindow):
         self.log_viewer.setReadOnly(True)
 
         # Backup and OTA management
-        self.add_button("Backup Before OTA Update", 170, self.backup_before_ota)
-        self.add_button("Apply OTA Update & Preserve Root", 210, self.apply_ota_update)
+        self.add_button("Backup Before OTA Update", 410, self.backup_before_ota)
+        self.add_button("Apply OTA Update & Preserve Root", 450, self.apply_ota_update)
 
         # Rescue mode
-        self.add_button("One-Click Rescue Mode", 250, self.enter_rescue_mode)
+        self.add_button("One-Click Rescue Mode", 490, self.enter_rescue_mode)
 
     def add_button(self, label, y_position, function):
         button = QPushButton(self)
@@ -144,27 +144,16 @@ class FlashTool(QMainWindow):
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
 
-def flash_partitions(self):
-        boot_img = QFileDialog.getOpenFileName(
-            self, "Select boot.img", "", "Image files (*.img)")[0]
-        vendor_img = QFileDialog.getOpenFileName(
-            self, "Select vendor.img", "", "Image files (*.img)")[0]
-        system_img = QFileDialog.getOpenFileName(
-            self, "Select system.img", "", "Image files (*.img)")[0]
+    def flash_partitions(self):
+        boot_img = QFileDialog.getOpenFileName(self, "Select boot.img", "", "Image files (*.img)")[0]
+        vendor_img = QFileDialog.getOpenFileName(self, "Select vendor.img", "", "Image files (*.img)")[0]
+        system_img = QFileDialog.getOpenFileName(self, "Select system.img", "", "Image files (*.img)")[0]
 
         if boot_img and vendor_img and system_img:
-            workflow = WorkflowManager(
-                self.progressBar, 
-                self.device_dropdown.currentText(), 
-                'partition_flash', 
-                boot_img, 
-                vendor_img, 
-                system_img
-            )
+            workflow = WorkflowManager(self.progressBar, self.device_dropdown.currentText(), 'partition_flash', boot_img, vendor_img, system_img)
             workflow.start()
         else:
-            QtWidgets.QMessageBox.warning(
-                self, "Warning", "No partitions selected for flashing!")
+            QtWidgets.QMessageBox.warning(self, "Warning", "No partitions selected for flashing!")
 
     def root_with_encryption(self):
         DeviceManager.root_device(preserve_encryption=True)
@@ -186,9 +175,7 @@ def flash_partitions(self):
         if success:
             QtWidgets.QMessageBox.information(self, "Info", "Backup completed successfully.")
         else:
-            QtWidgets.QMessageBox.critical(
-                self, "Error", "Backup failed. Check logs for details."
-            )
+            QtWidgets.QMessageBox.critical(self, "Error", "Backup failed. Check logs for details.")
 
     def apply_ota_update(self):
         ota_zip = QFileDialog.getOpenFileName(self, "Select OTA Update ZIP", "", "Zip files (*.zip)")[0]
