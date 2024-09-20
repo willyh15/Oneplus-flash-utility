@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch
 from device_manager import DeviceManager
 import logging
+import subprocess
+
 
 class TestDeviceManager(unittest.TestCase):
 
