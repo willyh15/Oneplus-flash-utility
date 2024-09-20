@@ -7,6 +7,17 @@ import logging
 
 class DeviceManager:
 
+    @staticmethod
+    def root_device(preserve_encryption=True):
+        # Example logic for rooting the device with or without encryption
+        if preserve_encryption:
+            logging.info("Rooting device while preserving encryption...")
+            # Add the logic for rooting with encryption preserved
+        else:
+            logging.info("Rooting device and disabling encryption...")
+            # Add the logic for rooting with encryption disabled
+        return True
+
     # --------------- Partition and Bootloader Management ---------------
     @staticmethod
     def reboot_to_bootloader():

@@ -174,7 +174,9 @@ class FlashTool(QMainWindow):
         if success:
             QtWidgets.QMessageBox.information(self, "Info", "Backup completed successfully.")
         else:
-            QtWidgets.QMessageBox.critical(self, "Error", "Backup failed. Check logs for details.")
+            QtWidgets.QMessageBox.critical(
+                self, "Error", "Backup failed. Check logs for details."
+            )
 
     def apply_ota_update(self):
         ota_zip = QFileDialog.getOpenFileName(self, "Select OTA Update ZIP", "", "Zip files (*.zip)")[0]
