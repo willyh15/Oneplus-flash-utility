@@ -27,7 +27,8 @@ class WorkflowManager:
 
     def load_workflow(self):
         """
-        Loads the workflow steps from the 'workflows.json' file based on the workflow type.
+        Loads the workflow steps from the 'workflows.json' file based on the 
+        workflow type.
         """
         try:
             with open('workflows.json', 'r') as f:
