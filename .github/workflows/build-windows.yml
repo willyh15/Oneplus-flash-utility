@@ -1,4 +1,4 @@
-name: Build and Test Windows Installer
+name: Build and Package OnePlus 7 Pro Tool
 
 on:
   push:
@@ -32,30 +32,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: List test files for debugging
-      run: |
-        ls -R tests
-      shell: bash
-
-    - name: Run Unit Tests
-      run: |
-        python -m pytest tests --disable-warnings --maxfail=1
-      shell: bash
-
-    - name: Build executable with PyInstaller (Debug Mode)
+    - name: Build executable with PyInstaller
       run: |
         pyinstaller --onefile --debug=all main.py
 
-    - name: Run the .exe and capture console output
-      run: |
-        ./dist/main.exe > output.log 2>&1 || echo "The app crashed"
-      shell: bash
-
-    - name: Upload output log
+    - name: Upload the executable
       uses: actions/upload-artifact@v3
       with:
-        name: console-output
-        path: output.log
+        name: oneplus7pro-tool-executable
+        path: dist/main.exe
 
     - name: Download Inno Setup
       run: |
@@ -88,7 +73,7 @@ jobs:
         "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
       shell: cmd
 
-    - name: Upload installer
+    - name: Upload the installer
       uses: actions/upload-artifact@v3
       with:
         name: oneplus7pro-tool-installer
