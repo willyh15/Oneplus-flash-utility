@@ -81,12 +81,11 @@ class WorkflowManager:
         if step == "flash_boot_partition" and self.boot_img:
             logging.info("Flashing boot partition.")
             return DeviceManager.flash_partition(self.boot_img, "boot")
-        elif step == "flash_vendor_partition" and self.vendor_img:
+        if step == "flash_vendor_partition" and self.vendor_img:
             logging.info("Flashing vendor partition.")
             return DeviceManager.flash_partition(self.vendor_img, "vendor")
-        elif step == "flash_system_partition" and self.system_img:
+        if step == "flash_system_partition" and self.system_img:
             logging.info("Flashing system partition.")
             return DeviceManager.flash_partition(self.system_img, "system")
-        else:
-            logging.warning(f"Unknown or unsupported step: {step}")
-            return False
+        logging.warning(f"Unknown or unsupported step: {step}")
+        return False
