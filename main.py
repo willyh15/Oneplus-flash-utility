@@ -144,16 +144,27 @@ class FlashTool(QMainWindow):
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
 
-    def flash_partitions(self):
-        boot_img = QFileDialog.getOpenFileName(self, "Select boot.img", "", "Image files (*.img)")[0]
-        vendor_img = QFileDialog.getOpenFileName(self, "Select vendor.img", "", "Image files (*.img)")[0]
-        system_img = QFileDialog.getOpenFileName(self, "Select system.img", "", "Image files (*.img)")[0]
+def flash_partitions(self):
+        boot_img = QFileDialog.getOpenFileName(
+            self, "Select boot.img", "", "Image files (*.img)")[0]
+        vendor_img = QFileDialog.getOpenFileName(
+            self, "Select vendor.img", "", "Image files (*.img)")[0]
+        system_img = QFileDialog.getOpenFileName(
+            self, "Select system.img", "", "Image files (*.img)")[0]
 
         if boot_img and vendor_img and system_img:
-            workflow = WorkflowManager(self.progressBar, self.device_dropdown.currentText(), 'partition_flash', boot_img, vendor_img, system_img)
+            workflow = WorkflowManager(
+                self.progressBar, 
+                self.device_dropdown.currentText(), 
+                'partition_flash', 
+                boot_img, 
+                vendor_img, 
+                system_img
+            )
             workflow.start()
         else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No partitions selected for flashing!")
+            QtWidgets.QMessageBox.warning(
+                self, "Warning", "No partitions selected for flashing!")
 
     def root_with_encryption(self):
         DeviceManager.root_device(preserve_encryption=True)
