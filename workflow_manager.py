@@ -4,8 +4,7 @@ import time
 import json
 
 class WorkflowManager:
-def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None,
-                 system_img=None):
+    def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None, system_img=None):
         """
         Initializes the WorkflowManager with necessary data for executing the workflow.
 
@@ -26,7 +25,6 @@ def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img
         self.workflows = {}
         self.load_workflow()
 
-
     def load_workflow(self):
         """
         Loads the workflow steps from the 'workflows.json' file based on the 
@@ -42,7 +40,6 @@ def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img
         except json.JSONDecodeError as e:
             logging.error(f"Error decoding workflows.json: {e}")
             self.workflows = {}
-
 
     def start(self):
         """Starts the workflow by executing each step and updating the progress bar."""
@@ -69,7 +66,6 @@ def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img
             logging.info(f"{self.workflow_type} workflow completed successfully!")
         else:
             logging.error(f"{self.workflow_type} workflow did not complete successfully.")
-
 
     def execute_step(self, step):
         """
