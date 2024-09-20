@@ -186,12 +186,11 @@ class DeviceManager:
         if encryption_type == "file":
             logging.info("Applying decryption for File-Based Encryption (FBE).")
             return DeviceManager.apply_fbe_decryption_tool()
-        elif encryption_type == "block":
+        if encryption_type == "block":
             logging.info("Applying decryption for Full-Disk Encryption (FDE).")
             return DeviceManager.apply_fde_decryption_tool()
-        else:
-            logging.error("Unknown encryption type detected.")
-            return False
+        logging.error("Unknown encryption type detected.")
+        return False
 
     @staticmethod
     def apply_fde_decryption_tool():
@@ -292,9 +291,8 @@ class DeviceManager:
             if DeviceManager.verify_checksum(save_path, expected_checksum):
                 logging.info("Firmware verified successfully.")
                 return True
-            else:
-                logging.error("Firmware checksum mismatch! The file may be corrupted.")
-                return False
+            logging.error("Firmware checksum mismatch! The file may be corrupted.")
+            return False
         else:
             logging.error("Failed to download firmware.")
             return False
@@ -315,9 +313,8 @@ class DeviceManager:
         if device_model in config:
             logging.info(f"Loaded profile for device: {device_model}")
             return config[device_model]
-        else:
-            logging.error(f"No profile found for device: {device_model}")
-            return None
+        logging.error(f"No profile found for device: {device_model}")
+        return None
 
     # --------------- Kernel Management ---------------
     @staticmethod
