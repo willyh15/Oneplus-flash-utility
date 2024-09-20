@@ -7,7 +7,7 @@ class WorkflowManager:
     def __init__(self, progressBar, device, workflow_type, boot_img=None, vendor_img=None, system_img=None):
         """
         Initializes the WorkflowManager with necessary data for executing the workflow.
-        
+
         Args:
             progressBar (QProgressBar): The progress bar UI element to show progress.
             device (str): The device being flashed or managed.
@@ -48,7 +48,7 @@ class WorkflowManager:
         if not steps:
             logging.error(f"No steps found for workflow type: {self.workflow_type}")
             return
-        
+
         total_steps = len(steps)
         self.progressBar.setValue(0)
 
@@ -71,7 +71,7 @@ class WorkflowManager:
     def execute_step(self, step):
         """
         Executes a single step in the workflow based on the step type.
-        
+
         Args:
             step (str): The current step to execute.
 
