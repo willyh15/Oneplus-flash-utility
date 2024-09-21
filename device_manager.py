@@ -4,6 +4,10 @@ import os
 import logging
 
 class DeviceManager:
+    ADB_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/" \
+               "platform-tools/adb.exe"
+    FASTBOOT_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/" \
+                    "platform-tools/fastboot.exe"
 
     @staticmethod
     def root_device(preserve_encryption=True):
@@ -17,7 +21,7 @@ class DeviceManager:
     @staticmethod
     def reboot_to_bootloader():
         try:
-            subprocess.run(["/usr/bin/adb", "reboot", "bootloader"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "reboot", "bootloader"], check=True)
             logging.info("Rebooted to bootloader.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")
@@ -26,8 +30,8 @@ class DeviceManager:
     def flash_partition(image_path, partition):
         try:
             if DeviceManager.verify_image(image_path):
-                subprocess.run(["/usr/bin/fastboot", "flash", partition, image_path],
-                               check=True)
+                subprocess.run([DeviceManager.FASTBOOT_PATH, "flash", partition,
+                                image_path], check=True)
                 logging.info(f"Flashed {partition} partition with {image_path}")
             else:
                 logging.error(f"Integrity check failed for {image_path}. Aborting flash.")
@@ -38,7 +42,7 @@ class DeviceManager:
     def flash_rom(rom_path):
         try:
             logging.info(f"Starting to flash ROM: {rom_path}")
-            subprocess.run(["/usr/bin/adb", "sideload", rom_path], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "sideload", rom_path], check=True)
             logging.info("ROM flashing completed successfully.")
             return True
         except subprocess.CalledProcessError as e:
@@ -49,14 +53,13 @@ class DeviceManager:
     def flash_kernel(kernel_image):
         try:
             if DeviceManager.verify_image(kernel_image):
-                subprocess.run(["/usr/bin/adb", "reboot", "bootloader"], check=True)
-                subprocess.run(["/usr/bin/fastboot", "flash", "boot", kernel_image],
-                               check=True)
+                subprocess.run([DeviceManager.ADB_PATH, "reboot", "bootloader"], check=True)
+                subprocess.run([DeviceManager.FASTBOOT_PATH, "flash", "boot",
+                                kernel_image], check=True)
                 logging.info(f"Flashed kernel: {kernel_image}")
             else:
-                # skipcq: FLK-E501
-                logging.error("Kernel image verification failed for %s. Aborting flash.",
-                              kernel_image)
+                logging.error(f"Kernel image verification failed for {kernel_image}. "
+                              f"Aborting flash.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to flash kernel: {e}")
 
@@ -78,8 +81,8 @@ class DeviceManager:
     @staticmethod
     def check_battery_level():
         try:
-            # skipcq: FLK-E501
-            battery_level = subprocess.check_output(["/usr/bin/adb", "shell", "dumpsys", "battery"]).decode()
+            battery_level = subprocess.check_output([DeviceManager.ADB_PATH,
+                                                     "shell", "dumpsys", "battery"]).decode()
             logging.info(f"Battery status: {battery_level}")
             return battery_level
         except subprocess.CalledProcessError as e:
@@ -89,8 +92,8 @@ class DeviceManager:
     @staticmethod
     def get_device_info():
         try:
-            # skipcq: FLK-E501
-            device_info = subprocess.check_output(["/usr/bin/adb", "shell", "getprop"]).decode()
+            device_info = subprocess.check_output([DeviceManager.ADB_PATH,
+                                                   "shell", "getprop"]).decode()
             logging.info(f"Device info: {device_info}")
             return device_info
         except subprocess.CalledProcessError as e:
@@ -100,8 +103,8 @@ class DeviceManager:
     @staticmethod
     def get_device_model():
         try:
-            # skipcq: FLK-E501
-            model = subprocess.check_output(["/usr/bin/adb", "shell", "getprop", "ro.product.model"]).decode().strip()
+            model = subprocess.check_output([DeviceManager.ADB_PATH, "shell", "getprop",
+                                             "ro.product.model"]).decode().strip()
             logging.info(f"Device model: {model}")
             return model
         except subprocess.CalledProcessError as e:
@@ -112,7 +115,7 @@ class DeviceManager:
     @staticmethod
     def clear_logs():
         try:
-            subprocess.run(["/usr/bin/adb", "logcat", "-c"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "logcat", "-c"], check=True)
             logging.info("Cleared logs on the device.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to clear logs: {e}")
@@ -120,7 +123,7 @@ class DeviceManager:
     @staticmethod
     def retrieve_logs():
         try:
-            logs = subprocess.check_output(["/usr/bin/adb", "logcat", "-d"]).decode()
+            logs = subprocess.check_output([DeviceManager.ADB_PATH, "logcat", "-d"]).decode()
             logging.info("Retrieved logs from the device.")
             return logs
         except subprocess.CalledProcessError as e:
@@ -131,9 +134,9 @@ class DeviceManager:
     @staticmethod
     def apply_ota_update(ota_zip):
         try:
-            subprocess.run(["/usr/bin/adb", "push", ota_zip, "/sdcard/"], check=True)
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "shell", "twrp", "install", f"/sdcard/{os.path.basename(ota_zip)}"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "push", ota_zip, "/sdcard/"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "twrp", "install",
+                            f"/sdcard/{os.path.basename(ota_zip)}"], check=True)
             logging.info(f"OTA Update {ota_zip} applied successfully.")
             return True
         except subprocess.CalledProcessError as e:
@@ -144,8 +147,8 @@ class DeviceManager:
     def backup_data_partition():
         try:
             logging.info("Starting data partition backup.")
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "shell", "twrp", "backup", "data"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "twrp", "backup", "data"],
+                           check=True)
             logging.info("Data partition backup completed.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to back up data partition: {e}")
@@ -153,8 +156,8 @@ class DeviceManager:
     @staticmethod
     def restore_device():
         try:
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "shell", "twrp", "restore", "SDB"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "twrp", "restore", "SDB"],
+                           check=True)
             logging.info("Device restored from backup successfully.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to restore device: {e}")
@@ -163,8 +166,8 @@ class DeviceManager:
     @staticmethod
     def detect_encryption_type():
         try:
-            # skipcq: FLK-E501
-            encryption_type = subprocess.check_output(["/usr/bin/adb", "shell", "getprop", "ro.crypto.type"]).decode().strip()
+            encryption_type = subprocess.check_output([DeviceManager.ADB_PATH, "shell",
+                                                       "getprop", "ro.crypto.type"]).decode().strip()
             logging.info(f"Detected encryption type: {encryption_type}")
             return encryption_type
         except subprocess.CalledProcessError as e:
@@ -187,10 +190,10 @@ class DeviceManager:
     @staticmethod
     def apply_fde_decryption_tool():
         try:
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "push", "Disable_Dm-Verity_ForceEncrypt_FDE.zip", "/sdcard/"], check=True)
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "shell", "/usr/bin/twrp", "install", "/sdcard/Disable_Dm-Verity_ForceEncrypt_FDE.zip"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "push",
+                            "Disable_Dm-Verity_ForceEncrypt_FDE.zip", "/sdcard/"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "twrp", "install",
+                            "/sdcard/Disable_Dm-Verity_ForceEncrypt_FDE.zip"], check=True)
             logging.info("Applied FDE decryption tool.")
             return True
         except subprocess.CalledProcessError as e:
@@ -200,10 +203,10 @@ class DeviceManager:
     @staticmethod
     def apply_fbe_decryption_tool():
         try:
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "push", "Disable_Dm-Verity_ForceEncrypt_FBE.zip", "/sdcard/"], check=True)
-            # skipcq: FLK-E501
-            subprocess.run(["/usr/bin/adb", "shell", "twrp", "install", "/sdcard/Disable_Dm-Verity_ForceEncrypt_FBE.zip"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "push",
+                            "Disable_Dm-Verity_ForceEncrypt_FBE.zip", "/sdcard/"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "twrp", "install",
+                            "/sdcard/Disable_Dm-Verity_ForceEncrypt_FBE.zip"], check=True)
             logging.info("Applied FBE decryption tool.")
             return True
         except subprocess.CalledProcessError as e:
@@ -214,7 +217,7 @@ class DeviceManager:
     @staticmethod
     def enter_edl_mode():
         try:
-            subprocess.run(["/usr/bin/adb", "reboot-edl"], check=True)
+            subprocess.run([DeviceManager.ADB_PATH, "reboot-edl"], check=True)
             logging.info("Entered EDL mode for recovery.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to enter EDL mode: {e}")
