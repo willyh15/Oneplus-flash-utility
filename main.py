@@ -33,6 +33,9 @@ class LogcatThread(QtCore.QThread):
         super(LogcatThread, self).__init__(parent)
         self.running = True
 
+    def __init__(self):
+        self.process = None
+
     def run(self):
         # Start adb logcat process
         self.process = subprocess.Popen(["adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -48,8 +48,8 @@ class DeviceManager:
     def flash_kernel(kernel_image):
         try:
             if DeviceManager.verify_image(kernel_image):
-                subprocess.run(["adb", "reboot", "bootloader"], check=True)
-                subprocess.run(["fastboot", "flash", "boot", kernel_image], check=True)
+                subprocess.run(["/usr/bin/adb", "reboot", "bootloader"], check=True)
+                subprocess.run(["/usr/bin/fastboot", "flash", "boot", kernel_image], check=True)
                 logging.info(f"Flashed kernel: {kernel_image}")
             else:
                 logging.error(f"Kernel image verification failed for {kernel_image}. Aborting flash.")
