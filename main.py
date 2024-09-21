@@ -1,12 +1,12 @@
 import logging
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
-                             QComboBox, QProgressBar)
+                             QComboBox, QProgressBar, QTextEdit)
 import sys
 from device_manager import DeviceManager
 import warnings
 import subprocess
-from config_loader import load_config
+from config_loader import load_config  # Adjusted import statement
 
 # Configure logging
 logging.basicConfig(
@@ -34,7 +34,8 @@ class LogcatThread(QtCore.QThread):
         self.running = True
 
     def run(self):
-        self.process = subprocess.Popen(["/usr/bin/adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Start adb logcat process
+        self.process = subprocess.Popen(["adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while self.running:
             log_line = self.process.stdout.readline().decode('utf-8')
             if log_line:
@@ -48,7 +49,7 @@ class LogcatThread(QtCore.QThread):
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = load_config()
+        self.config = load_config()  # Loading config from config_loader
         self.device_profile = None
         self.logcat_thread = None
         self.init_ui()
@@ -57,18 +58,36 @@ class FlashTool(QMainWindow):
         self.setWindowTitle("Rooting & Rescue Tool")
         self.setGeometry(300, 300, 800, 600)
 
-        # UI components (buttons, dropdowns, progress bar, etc.)
+        # Device dropdown
         self.device_dropdown = QComboBox(self)
         self.device_dropdown.setGeometry(50, 50, 400, 30)
         self.device_dropdown.addItem("OnePlus 7 Pro")
         self.device_dropdown.addItem("Pixel 5")
 
+        # Progress bar
         self.progressBar = QProgressBar(self)
         self.progressBar.setGeometry(50, 400, 400, 30)
         self.progressBar.setValue(0)
 
+        # Buttons for various actions
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
         self.add_button("Root Device (Disable Encryption)", 130, self.root_without_encryption)
+        self.add_button("Install Custom ROM", 170, self.install_custom_rom)
+        self.add_button("Flash Custom Kernel", 210, self.flash_kernel)
+        self.add_button("Backup Before OTA Update", 250, self.backup_before_ota)
+        self.add_button("Apply OTA Update & Preserve Root", 290, self.apply_ota_update)
+        self.add_button("One-Click Rescue Mode", 330, self.enter_rescue_mode)
+        
+        # Logcat button
+        self.button_logcat = QPushButton(self)
+        self.button_logcat.setText("Start Logcat")
+        self.button_logcat.setGeometry(50, 370, 400, 30)
+        self.button_logcat.clicked.connect(self.toggle_logcat)
+
+        # Log viewer
+        self.log_viewer = QTextEdit(self)
+        self.log_viewer.setGeometry(50, 410, 700, 150)
+        self.log_viewer.setReadOnly(True)
 
     def add_button(self, label, y_position, function):
         button = QPushButton(self)
@@ -83,6 +102,24 @@ class FlashTool(QMainWindow):
     def root_without_encryption(self):
         DeviceManager.root_device(preserve_encryption=False)
         QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
+
+    def install_custom_rom(self):
+        rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
+        if rom_zip:
+            success = DeviceManager.flash_rom(rom_zip)
+            if success:
+                QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
+
+    def flash_kernel(self):
+        kernel_img = QFileDialog.getOpenFileName(self, "Select Custom Kernel Image", "", "Image files (*.img)")[0]
+        if kernel_img:
+            success = DeviceManager.flash_kernel(kernel_img)
+            if success:
+                QtWidgets.QMessageBox.information(self, "Info", "Custom kernel flashed successfully.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "Kernel flashing failed. Check logs for details.")
 
     def enter_rescue_mode(self):
         success = DeviceManager.enter_rescue_mode()
