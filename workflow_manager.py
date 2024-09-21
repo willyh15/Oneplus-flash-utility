@@ -35,7 +35,7 @@ class WorkflowManager:
                 self.workflows = json.load(f)
                 logging.info(f"Loaded workflow configuration for {self.workflow_type}.")
         except FileNotFoundError as e:
-            logging.error(f"workflows.json file not found: {e}")
+            logging.error("workflows.json file not found: %s", e)
             self.workflows = {}
         except json.JSONDecodeError as e:
             logging.error(f"Error decoding workflows.json: {e}")
