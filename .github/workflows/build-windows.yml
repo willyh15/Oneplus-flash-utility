@@ -1,4 +1,4 @@
-name: Build and Test Windows Installer
+name: Build and Output Executable
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Use Windows runner for Inno Setup and .exe
+    runs-on: windows-latest  # Use Windows runner for building .exe with PyInstaller
 
     steps:
     - name: Checkout code
@@ -27,55 +27,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Build executable with PyInstaller (Debug Mode)
+    # Build the executable with PyInstaller
+    - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --debug=all main.py
+        pyinstaller --onefile main.py
 
-    - name: Run the .exe and capture console output
-      run: |
-        .\dist\main.exe > output.log 2>&1 || echo "The app crashed"
-      shell: cmd
-
-    - name: Upload output log
+    # Upload the .exe file to the repository as an artifact
+    - name: Upload executable
       uses: actions/upload-artifact@v3
       with:
-        name: console-output
-        path: output.log
-
-    - name: Download Inno Setup
-      run: |
-        curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-      shell: cmd
-
-    - name: Install Inno Setup
-      run: |
-        .\innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
-      shell: cmd
-
-    - name: Create Inno Setup script
-      run: |
-        echo "[Setup]" > installer.iss
-        echo "AppName=OnePlus 7 Pro Tool" >> installer.iss
-        echo "AppVersion=1.0" >> installer.iss
-        echo "DefaultDirName={autopf}\\OnePlus 7 Pro Tool" >> installer.iss
-        echo "OutputDir=dist" >> installer.iss
-        echo "OutputBaseFilename=OnePlus7Pro_Tool_Installer" >> installer.iss
-        echo "[Files]" >> installer.iss
-        echo "Source: \"dist\\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
-        echo "[Icons]" >> installer.iss
-        echo "Name: \"{group}\\OnePlus 7 Pro Tool\"; Filename: \"{app}\\main.exe\"" >> installer.iss
-        echo "[Run]" >> installer.iss
-        echo "Filename: \"{app}\\main.exe\"; Description: \"Launch OnePlus 7 Pro Tool\"; Flags: nowait postinstall skipifsilent" >> installer.iss
-      shell: cmd
-
-    - name: Build Installer with Inno Setup
-      if: success()
-      run: |
-        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" /Q installer.iss
-      shell: cmd
-
-    - name: Upload installer
-      uses: actions/upload-artifact@v3
-      with:
-        name: oneplus7pro-tool-installer
-        path: dist/OnePlus7Pro_Tool_Installer.exe
+        name: oneplus7pro-tool-executable
+        path: dist/main.exe
