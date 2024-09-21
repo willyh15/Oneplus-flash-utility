@@ -1,5 +1,4 @@
 import logging
-import json
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
                              QComboBox, QProgressBar, QTextEdit)
@@ -8,6 +7,7 @@ from device_manager import DeviceManager
 from workflow_manager import WorkflowManager
 import warnings
 import subprocess
+from configloader import load_config  # Importing from your configloader module
 
 # Configure logging
 logging.basicConfig(
@@ -26,20 +26,6 @@ def exception_hook(exc_type, exc_value, exc_traceback):
 
 # Hook up uncaught exceptions
 sys.excepthook = exception_hook
-
-# Load configuration
-def load_config():
-    try:
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-            logging.info("Loaded config.json successfully")
-            return config
-    except FileNotFoundError as e:
-        logging.error(f"config.json not found: {e}")
-        return {}
-    except json.JSONDecodeError as e:
-        logging.error(f"Error decoding config.json: {e}")
-        return {}
 
 # Logcat thread definition
 class LogcatThread(QtCore.QThread):
@@ -65,7 +51,7 @@ class LogcatThread(QtCore.QThread):
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = load_config()
+        self.config = load_config()  # Loading config using the imported configloader
         self.device_profile = None
         self.logcat_thread = None
         self.init_ui()
