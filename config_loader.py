@@ -22,4 +22,3 @@ def load_config(config_file='config.json'):
     except json.JSONDecodeError as e:
         logging.error(f"Error decoding {config_file}: {e}")
         return {}
-
