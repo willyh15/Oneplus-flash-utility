@@ -17,7 +17,7 @@ class DeviceManager:
     @staticmethod
     def reboot_to_bootloader():
         try:
-            subprocess.run(["adb", "reboot", "bootloader"], check=True)
+            subprocess.run(["/usr/bin/adb", "reboot", "bootloader"], check=True)
             logging.info("Rebooted to bootloader.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to reboot to bootloader: {e}")

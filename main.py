@@ -1,18 +1,17 @@
 import logging
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
-                             QComboBox, QProgressBar, QTextEdit)
+                             QComboBox, QProgressBar)
 import sys
 from device_manager import DeviceManager
-from workflow_manager import WorkflowManager
 import warnings
 import subprocess
-from config_loader import load_config  # Correct import
+from config_loader import load_config
 
 # Configure logging
 logging.basicConfig(
     filename='flash_tool.log',
-    level=logging.DEBUG,  # Set to DEBUG to capture all logs
+    level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
@@ -35,8 +34,7 @@ class LogcatThread(QtCore.QThread):
         self.running = True
 
     def run(self):
-        # Start adb logcat process
-        self.process = subprocess.Popen(["adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.process = subprocess.Popen(["/usr/bin/adb", "logcat"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while self.running:
             log_line = self.process.stdout.readline().decode('utf-8')
             if log_line:
@@ -50,7 +48,7 @@ class LogcatThread(QtCore.QThread):
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = load_config()  # Loading config using the imported config_loader
+        self.config = load_config()
         self.device_profile = None
         self.logcat_thread = None
         self.init_ui()
@@ -71,8 +69,6 @@ class FlashTool(QMainWindow):
 
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
         self.add_button("Root Device (Disable Encryption)", 130, self.root_without_encryption)
-
-        # More UI components like Install Custom ROM, Kernel Tuning, etc.
 
     def add_button(self, label, y_position, function):
         button = QPushButton(self)
