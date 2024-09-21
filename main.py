@@ -180,7 +180,7 @@ def application():
     window.show()
     try:
         sys.exit(app.exec_())
-    except Exception as e:
+    except Exception as _:
         logging.exception("An unexpected error occurred.")
 
 if __name__ == "__main__":
