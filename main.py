@@ -1,12 +1,13 @@
 import logging
+import json
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog, 
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog,
                              QComboBox, QProgressBar, QTextEdit)
 import sys
+import subprocess
+import os
 from device_manager import DeviceManager
 import warnings
-import subprocess
-from config_loader import load_config  # Adjusted import statement
 
 # Configure logging
 logging.basicConfig(
@@ -32,8 +33,6 @@ class LogcatThread(QtCore.QThread):
     def __init__(self, parent=None):
         super(LogcatThread, self).__init__(parent)
         self.running = True
-
-    def __init__(self):
         self.process = None
 
     def run(self):
@@ -46,13 +45,14 @@ class LogcatThread(QtCore.QThread):
 
     def stop(self):
         self.running = False
-        self.process.terminate()
+        if self.process:
+            self.process.terminate()
         self.wait()
 
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = load_config()  # Loading config from config_loader
+        self.config = load_config()  # Load config from 'config.json'
         self.device_profile = None
         self.logcat_thread = None
         self.init_ui()
@@ -64,15 +64,14 @@ class FlashTool(QMainWindow):
         # Device dropdown
         self.device_dropdown = QComboBox(self)
         self.device_dropdown.setGeometry(50, 50, 400, 30)
-        self.device_dropdown.addItem("OnePlus 7 Pro")
-        self.device_dropdown.addItem("Pixel 5")
+        self.device_dropdown.addItems(self.config.keys())  # Populate based on config.json
 
         # Progress bar
         self.progressBar = QProgressBar(self)
         self.progressBar.setGeometry(50, 400, 400, 30)
         self.progressBar.setValue(0)
 
-        # Buttons for various actions
+        # Add buttons for various actions
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
         self.add_button("Root Device (Disable Encryption)", 130, self.root_without_encryption)
         self.add_button("Install Custom ROM", 170, self.install_custom_rom)
@@ -80,7 +79,7 @@ class FlashTool(QMainWindow):
         self.add_button("Backup Before OTA Update", 250, self.backup_before_ota)
         self.add_button("Apply OTA Update & Preserve Root", 290, self.apply_ota_update)
         self.add_button("One-Click Rescue Mode", 330, self.enter_rescue_mode)
-        
+
         # Logcat button
         self.button_logcat = QPushButton(self)
         self.button_logcat.setText("Start Logcat")
@@ -173,6 +172,28 @@ class FlashTool(QMainWindow):
 
     def update_log_viewer(self, log_line):
         self.log_viewer.append(log_line)
+
+def load_config(config_file='config.json'):
+    """Loads configuration from a JSON file."""
+    try:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            logging.info(f"Loaded {config_file} successfully.")
+            return config
+    except FileNotFoundError:
+        logging.warning(f"{config_file} not found. Creating default config.")
+        default_config = {
+            "oneplus7pro": {
+                "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+                "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
+            }
+        }
+        with open(config_file, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        return default_config
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding {config_file}: {e}")
+        return {}
 
 def application():
     app = QApplication(sys.argv)
