@@ -56,7 +56,7 @@ class LogcatThread(QtCore.QThread):
 class DeviceStateThread(QtCore.QThread):
     device_info_updated = QtCore.pyqtSignal(str)
     battery_level_updated = QtCore.pyqtSignal(str)
-    device_state_updated = QtCore.pyqtSignal(str)
+    device_state = DeviceManager.get_device_state()
 
     def __init__(self, parent=None):
         super(DeviceStateThread, self).__init__(parent)
