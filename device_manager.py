@@ -34,17 +34,26 @@ class DeviceManager:
 
     @staticmethod
     def get_device_state():
-        """
-        Get the current state of the connected device.
-        Returns a string representing the device state (e.g., "bootloader", "recovery", "device").
-        """
+        """Detect the current state of the connected device."""
         try:
-            output = subprocess.check_output([DeviceManager.ADB_PATH, "get-state"]).decode().strip()
-            if not output:
-                return "disconnected"
-            return output
+            # Check for Fastboot Mode
+            output = subprocess.check_output([DeviceManager.FASTBOOT_PATH, "devices"]).decode().strip()
+            if output:
+                return "Fastboot Mode"
+
+            # Check for ADB Mode
+            output = subprocess.check_output([DeviceManager.ADB_PATH, "devices"]).decode().strip()
+            if "device" in output and not "unauthorized" in output:
+                return "ADB Mode"
+
+            # Check for Recovery Mode
+            output = subprocess.check_output([DeviceManager.ADB_PATH, "shell", "getprop", "ro.bootmode"]).decode().strip()
+            if output == "recovery":
+                return "Recovery Mode"
+
+            return "Disconnected"
         except subprocess.CalledProcessError:
-            return "disconnected"
+            return "Unknown"
 
     @staticmethod
     def reboot_to_normal_mode():
