@@ -53,6 +53,26 @@ class LogcatThread(QtCore.QThread):
             self.process.terminate()
         self.wait()
 
+class LogFormatter(logging.Formatter):
+    """Custom log formatter to apply colors based on log level."""
+
+    COLOR_CODES = {
+        "DEBUG": "\033[94m",  # Blue
+        "INFO": "\033[92m",   # Green
+        "WARNING": "\033[93m",  # Yellow
+        "ERROR": "\033[91m",   # Red
+        "CRITICAL": "\033[95m"  # Magenta
+    }
+
+    def format(self, record):
+        log_color = self.COLOR_CODES.get(record.levelname, "")
+        reset = "\033[0m"
+        return f"{log_color}{super().format(record)}{reset}"
+
+# Apply the custom formatter
+logging.basicConfig(level=logging.DEBUG, format=LogFormatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+
 class DeviceStateThread(QtCore.QThread):
     device_info_updated = QtCore.pyqtSignal(str)
     battery_level_updated = QtCore.pyqtSignal(str)
