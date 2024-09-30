@@ -53,6 +53,37 @@ class LogcatThread(QtCore.QThread):
             self.process.terminate()
         self.wait()
 
+class DeviceStateThread(QtCore.QThread):
+    device_info_updated = QtCore.pyqtSignal(str)
+    battery_level_updated = QtCore.pyqtSignal(str)
+    device_state_updated = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(DeviceStateThread, self).__init__(parent)
+        self.running = True
+
+    def run(self):
+        """Continuously monitor device state and update the UI."""
+        while self.running:
+            try:
+                device_info = DeviceManager.get_device_info()
+                battery_level = DeviceManager.check_battery_level()
+                device_state = DeviceManager.get_device_state()
+
+                # Emit the gathered information
+                self.device_info_updated.emit(device_info)
+                self.battery_level_updated.emit(battery_level)
+                self.device_state_updated.emit(device_state)
+
+            except Exception as e:
+                logging.error(f"Error updating device state: {e}")
+            time.sleep(5)  # Update every 5 seconds
+
+    def stop(self):
+        """Stop the monitoring thread."""
+        self.running = False
+
+
 class DeviceMonitorThread(QtCore.QThread):
     device_state_signal = QtCore.pyqtSignal(str)
     battery_level_signal = QtCore.pyqtSignal(str)
@@ -105,6 +136,18 @@ class FlashTool(QMainWindow):
         # Battery level label
         self.battery_level_label = QtWidgets.QLabel("Battery Level: Unknown", self)
         self.battery_level_label.setGeometry(500, 20, 200, 20)
+
+        # Device information label
+        self.device_info_label = QTextEdit(self)
+        self.device_info_label.setGeometry(50, 450, 700, 100)
+        self.device_info_label.setReadOnly(True)
+
+        # Initialize and start the device state thread
+        self.device_state_thread = DeviceStateThread()
+        self.device_state_thread.device_info_updated.connect(self.update_device_info)
+        self.device_state_thread.battery_level_updated.connect(self.update_battery_level)
+        self.device_state_thread.device_state_updated.connect(self.update_device_state)
+        self.device_state_thread.start()
 
         # Device dropdown
         self.device_dropdown = QComboBox(self)
