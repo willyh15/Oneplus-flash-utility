@@ -10,6 +10,7 @@ from device_manager import DeviceManager
 from setup_manager import SetupManager
 from log_manager import LogManager
 from workflow_manager import WorkflowManager
+from config_manager import ConfigManager
 import warnings
 
 
@@ -133,7 +134,7 @@ class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
         LogManager.configure_logger()
-        self.config = load_config()
+        self.config_manager = ConfigManager()
         self.device_profile = None
         self.logcat_thread = None
         self.device_monitor_thread = DeviceMonitorThread()  # Create device monitor thread
