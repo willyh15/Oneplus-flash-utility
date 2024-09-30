@@ -4,10 +4,67 @@ import os
 import logging
 
 class DeviceManager:
-    ADB_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/" \
-               "platform-tools/adb.exe"
-    FASTBOOT_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/" \
-                    "platform-tools/fastboot.exe"
+    ADB_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/platform-tools/adb.exe"
+    FASTBOOT_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/platform-tools/fastboot.exe"
+
+    SUPPORTED_DEVICES = ["OnePlus 7 Pro", "Pixel 5"]
+
+    @staticmethod
+    def detect_connected_devices():
+        """Detects connected devices using adb and returns a list of device serials."""
+        try:
+            result = subprocess.run([DeviceManager.ADB_PATH, "devices"], capture_output=True, text=True)
+            device_list = [line.split()[0] for line in result.stdout.splitlines() if "device" in line and not line.startswith("List")]
+            logging.info(f"Connected devices detected: {device_list}")
+            return device_list
+        except FileNotFoundError:
+            logging.error("ADB executable not found at the specified path.")
+            return []
+
+    @staticmethod
+    def is_device_supported(serial):
+        """Checks if the connected device is supported by the tool."""
+        model = DeviceManager.get_device_model(serial)
+        if model in DeviceManager.SUPPORTED_DEVICES:
+            logging.info(f"Device {serial} ({model}) is supported.")
+            return True
+        else:
+            logging.warning(f"Device {serial} ({model}) is not supported by this tool.")
+            return False
+
+    @staticmethod
+    def get_device_state():
+        """
+        Get the current state of the connected device.
+        Returns a string representing the device state (e.g., "bootloader", "recovery", "device").
+        """
+        try:
+            output = subprocess.check_output([DeviceManager.ADB_PATH, "get-state"]).decode().strip()
+            if not output:
+                return "disconnected"
+            return output
+        except subprocess.CalledProcessError:
+            return "disconnected"
+
+    @staticmethod
+    def reboot_to_normal_mode():
+        try:
+            subprocess.run([DeviceManager.ADB_PATH, "reboot"], check=True)
+            logging.info("Rebooted to normal (device) mode.")
+        except subprocess.CalledProcessError as e:
+            logging.error("Failed to reboot to normal mode: %s", e)
+
+
+    @staticmethod
+    def get_device_model(serial):
+        """Fetches the device model for a given serial number."""
+        try:
+            model = subprocess.check_output([DeviceManager.ADB_PATH, "-s", serial, "shell", "getprop", "ro.product.model"]).decode().strip()
+            logging.info(f"Device {serial} model: {model}")
+            return model
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to retrieve device model for {serial}: {e}")
+            return None
 
     @staticmethod
     def root_device(preserve_encryption=True):

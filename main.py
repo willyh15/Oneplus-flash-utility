@@ -7,7 +7,11 @@ import sys
 import subprocess
 import os
 from device_manager import DeviceManager
+from setup_manager import SetupManager
+from log_manager import LogManager
+from workflow_manager import WorkflowManager
 import warnings
+
 
 # Configure logging
 logging.basicConfig(
@@ -49,17 +53,58 @@ class LogcatThread(QtCore.QThread):
             self.process.terminate()
         self.wait()
 
+class DeviceMonitorThread(QtCore.QThread):
+    device_state_signal = QtCore.pyqtSignal(str)
+    battery_level_signal = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(DeviceMonitorThread, self).__init__(parent)
+        self.running = True
+
+    def run(self):
+        while self.running:
+            # Track device state
+            device_state = DeviceManager.get_device_state()
+            battery_level = DeviceManager.check_battery_level()
+            
+            # Emit signals for UI update
+            self.device_state_signal.emit(device_state)
+            self.battery_level_signal.emit(battery_level)
+
+            # Check every 5 seconds
+            self.sleep(5)
+
+    def stop(self):
+        self.running = False
+
+
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = load_config()  # Load config from 'config.json'
+        LogManager.configure_logger()
+        self.config = load_config()
         self.device_profile = None
         self.logcat_thread = None
+        self.device_monitor_thread = DeviceMonitorThread()  # Create device monitor thread
+        self.device_monitor_thread.device_state_signal.connect(self.update_device_state)
+        self.device_monitor_thread.battery_level_signal.connect(self.update_battery_level)
         self.init_ui()
+        self.device_monitor_thread.start()  # Start monitoring
+
+
+
 
     def init_ui(self):
         self.setWindowTitle("Rooting & Rescue Tool")
         self.setGeometry(300, 300, 800, 600)
+
+        # Device state label
+        self.device_state_label = QtWidgets.QLabel("Device State: Unknown", self)
+        self.device_state_label.setGeometry(50, 20, 400, 20)
+
+        # Battery level label
+        self.battery_level_label = QtWidgets.QLabel("Battery Level: Unknown", self)
+        self.battery_level_label.setGeometry(500, 20, 200, 20)
 
         # Device dropdown
         self.device_dropdown = QComboBox(self)
@@ -79,6 +124,33 @@ class FlashTool(QMainWindow):
         self.add_button("Backup Before OTA Update", 250, self.backup_before_ota)
         self.add_button("Apply OTA Update & Preserve Root", 290, self.apply_ota_update)
         self.add_button("One-Click Rescue Mode", 330, self.enter_rescue_mode)
+        self.add_button("Export Logs", 450, self.export_logs)
+
+        # Add buttons for workflow automation
+        self.add_button("Full Device Reset", 370, self.run_full_device_reset)
+        self.add_button("Automated Root & ROM Installation", 410, self.run_automated_root_and_rom)
+
+        # Detect connected devices and populate dropdown
+        self.connected_devices = DeviceManager.detect_connected_devices()
+        self.device_dropdown = QComboBox(self)
+        self.device_dropdown.setGeometry(50, 50, 400, 30)
+        if self.connected_devices:
+            self.device_dropdown.addItems(self.connected_devices)
+        else:
+            self.device_dropdown.addItem("No devices connected")
+
+        # Check if the selected device is supported
+        self.check_device_button = QPushButton(self)
+        self.check_device_button.setText("Check Device Compatibility")
+        self.check_device_button.setGeometry(50, 90, 400, 30)
+        self.check_device_button.clicked.connect(self.check_device_compatibility)
+
+
+         # Log Level Dropdown
+        self.log_level_dropdown = QComboBox(self)
+        self.log_level_dropdown.setGeometry(500, 50, 200, 30)
+        self.log_level_dropdown.addItems(["DEBUG", "INFO", "WARNING", "ERROR"])
+        self.log_level_dropdown.currentTextChanged.connect(self.change_log_level)
 
         # Logcat button
         self.button_logcat = QPushButton(self)
@@ -91,6 +163,65 @@ class FlashTool(QMainWindow):
         self.log_viewer.setGeometry(50, 410, 700, 150)
         self.log_viewer.setReadOnly(True)
 
+    def run_full_device_reset(self):
+        workflow = WorkflowManager(self.device_dropdown.currentText(), self.progressBar)
+        workflow.full_device_reset()
+
+    def run_automated_root_and_rom(self):
+        rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
+        magisk_zip = QFileDialog.getOpenFileName(self, "Select Magisk ZIP", "", "Zip files (*.zip)")[0]
+        if rom_zip and magisk_zip:
+            workflow = WorkflowManager(self.device_dropdown.currentText(), self.progressBar)
+            workflow.automated_root_and_rom_installation(rom_zip, magisk_zip)
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please select both a ROM and a Magisk ZIP file.")
+
+
+    def export_logs(self):
+        """Allow the user to export the current log file."""
+        export_file, _ = QFileDialog.getSaveFileName(self, "Export Logs", "", "Text Files (*.txt)")
+        if export_file:
+            try:
+                with open('flash_tool.log', 'r') as log_file:
+                    logs = log_file.read()
+                with open(export_file, 'w') as export_file_obj:
+                    export_file_obj.write(logs)
+                QtWidgets.QMessageBox.information(self, "Info", f"Logs exported successfully to {export_file}.")
+            except Exception as e:
+                logging.error(f"Failed to export logs: {e}")
+                QtWidgets.QMessageBox.critical(self, "Error", "Failed to export logs. Check log file for details.")
+
+
+    def update_device_state(self, state):
+        """Update the device state label based on the device monitor."""
+        self.device_state_label.setText(f"Device State: {state}")
+        logging.info(f"Device state updated: {state}")
+
+    def update_battery_level(self, level):
+        """Update the battery level label based on the device monitor."""
+        self.battery_level_label.setText(f"Battery Level: {level}")
+        logging.info(f"Battery level updated: {level}")
+
+
+    def change_log_level(self, level_text):
+        """Update log level based on user selection."""
+        level = getattr(logging, level_text.upper(), logging.DEBUG)
+        LogManager.change_log_level(level)
+        QtWidgets.QMessageBox.information(self, "Info", f"Log level changed to: {level_text}")
+
+
+    def check_device_compatibility(self):
+        """Checks the compatibility of the selected device."""
+        selected_device = self.device_dropdown.currentText()
+        if selected_device == "No devices connected":
+            QtWidgets.QMessageBox.warning(self, "Warning", "No devices connected. Please connect a device.")
+        else:
+            is_supported = DeviceManager.is_device_supported(selected_device)
+            if is_supported:
+                QtWidgets.QMessageBox.information(self, "Info", f"Device {selected_device} is supported.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", f"Device {selected_device} is not supported.")
+
     def add_button(self, label, y_position, function):
         button = QPushButton(self)
         button.setText(label)
@@ -98,6 +229,10 @@ class FlashTool(QMainWindow):
         button.clicked.connect(function)
 
     def root_with_encryption(self):
+        state = DeviceManager.get_device_state()
+        if state != "device":
+            QtWidgets.QMessageBox.warning(self, "Warning", f"Device is not in the correct state ({state}). Rebooting to normal mode.")
+            DeviceManager.reboot_to_normal_mode()
         DeviceManager.root_device(preserve_encryption=True)
         QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
 
