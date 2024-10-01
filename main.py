@@ -133,17 +133,39 @@ class DeviceMonitorThread(QtCore.QThread):
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        LogManager.configure_logger()
-        self.config_manager = ConfigManager()
+        self.config = self.load_config()
         self.device_profile = None
         self.logcat_thread = None
-        self.device_monitor_thread = DeviceMonitorThread()  # Create device monitor thread
-        self.device_monitor_thread.device_state_signal.connect(self.update_device_state)
-        self.device_monitor_thread.battery_level_signal.connect(self.update_battery_level)
+        self.workflow_state = {}  # Workflow state tracking
         self.init_ui()
-        self.device_monitor_thread.start()  # Start monitoring
+        self.task_manager = TaskManagerWindow()
 
+    def root_with_encryption(self):
+        success, error_code = DeviceManager.root_device(preserve_encryption=True)
+        if success:
+            self.task_manager.update_tasks("Root with Encryption", "Completed")
+            self.workflow_state['root_with_encryption'] = 'Completed'
+            QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
+        else:
+            self.handle_error("Root with Encryption", error_code)
 
+    def flash_rom(self):
+        rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
+        if rom_zip:
+            success, error_code = DeviceManager.flash_rom(rom_zip)
+            if success:
+                self.task_manager.update_tasks("Install Custom ROM", "Success")
+                self.workflow_state['install_custom_rom'] = "Success"
+                QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
+            else:
+                self.handle_error("Install Custom ROM", error_code)
+
+    def handle_error(self, task_name, error_code):
+        """Handle errors by updating TaskManagerWindow and providing suggestions."""
+        error_message = DeviceManager.error_suggestions.get(error_code, "Unknown error.")
+        self.task_manager.update_tasks(task_name, "Failed")
+        self.task_manager.add_suggestion(f"{task_name}: {error_message}")
+        QtWidgets.QMessageBox.critical(self, "Error", error_message)
 
 
     def init_ui(self):
