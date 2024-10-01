@@ -1,72 +1,64 @@
 import logging
-import time
-from device_manager import DeviceManager
+from state_manager import StateManager
 
 class WorkflowManager:
-    def __init__(self, device, progress_bar=None):
-        self.device = device
-        self.progress_bar = progress_bar
+    def __init__(self, max_retries=3):
+        self.retry_count = 0
+        self.max_retries = max_retries
+        self.aborted = False
+        self.paused = False
+        self.state_manager = StateManager()
 
-    def update_progress(self, value, message=""):
-        """Update the progress bar and log a message."""
-        if self.progress_bar:
-            self.progress_bar.setValue(value)
-        logging.info(message)
+        # Load existing state if available
+        self.workflow_state = self.state_manager.load_state()
 
-    def full_device_reset(self):
-        """Perform a full device reset workflow."""
-        try:
-            logging.info("Starting full device reset workflow.")
-            
-            # Step 1: Backup Data
-            self.update_progress(10, "Backing up data partition...")
-            DeviceManager.backup_data_partition()
+    def execute_task_with_retries(self, task_func, *args, **kwargs):
+        """
+        Executes a task function with retry logic and enhanced error handling.
+        
+        Args:
+            task_func (function): The task function to execute.
+            *args: Arguments for the task function.
+            **kwargs: Keyword arguments for the task function.
+        """
+        while self.retry_count < self.max_retries and not self.aborted:
+            try:
+                if self.paused:
+                    logging.info("Workflow is paused. Waiting...")
+                    time.sleep(1)
+                    continue
 
-            # Step 2: Flash Stock ROM
-            self.update_progress(30, "Flashing stock ROM...")
-            if not DeviceManager.flash_rom("path/to/stock_rom.zip"):
-                raise Exception("Failed to flash stock ROM.")
+                logging.info(f"Executing task: {task_func.__name__} (Attempt {self.retry_count + 1}/{self.max_retries})")
 
-            # Step 3: Flash Custom Recovery
-            self.update_progress(50, "Flashing custom recovery...")
-            if not DeviceManager.flash_partition("path/to/twrp.img", "recovery"):
-                raise Exception("Failed to flash custom recovery.")
+                # Save the workflow state before starting
+                self.state_manager.update_state("current_task", task_func.__name__)
+                result = task_func(*args, **kwargs)
+                
+                if result:
+                    logging.info(f"Task {task_func.__name__} completed successfully.")
+                    self.retry_count = 0  # Reset retry count on success
 
-            # Step 4: Root Device
-            self.update_progress(70, "Rooting device...")
-            DeviceManager.root_device(preserve_encryption=False)
+                    # Save the state after successful completion
+                    self.state_manager.update_state("last_successful_task", task_func.__name__)
+                    return result
+                else:
+                    logging.warning(f"Task {task_func.__name__} failed. Retrying...")
+                    self.retry_count += 1
+            except Exception as e:
+                logging.error(f"Error during {task_func.__name__}: {e}")
+                self.retry_count += 1
+                self.handle_error(e)
 
-            # Step 5: Restore Data
-            self.update_progress(90, "Restoring data partition...")
-            DeviceManager.restore_device()
+        logging.critical(f"Task {task_func.__name__} failed after {self.max_retries} attempts. Aborting workflow.")
+        return False
 
-            self.update_progress(100, "Full device reset completed successfully!")
-            logging.info("Full device reset workflow completed.")
-        except Exception as e:
-            logging.error(f"Workflow failed: {e}")
-            self.update_progress(0, "Workflow failed. See logs for details.")
-
-    def automated_root_and_rom_installation(self, rom_path, magisk_path):
-        """Perform automated root and custom ROM installation."""
-        try:
-            logging.info("Starting automated root and ROM installation workflow.")
-            
-            # Step 1: Backup Current State
-            self.update_progress(10, "Backing up data partition...")
-            DeviceManager.backup_data_partition()
-
-            # Step 2: Flash Custom ROM
-            self.update_progress(30, f"Flashing custom ROM: {rom_path}")
-            if not DeviceManager.flash_rom(rom_path):
-                raise Exception(f"Failed to flash custom ROM: {rom_path}")
-
-            # Step 3: Flash Magisk for Root
-            self.update_progress(70, f"Flashing Magisk for root: {magisk_path}")
-            if not DeviceManager.flash_partition(magisk_path, "boot"):
-                raise Exception(f"Failed to flash Magisk: {magisk_path}")
-
-            self.update_progress(100, "Automated root and ROM installation completed successfully!")
-            logging.info("Automated root and ROM installation workflow completed.")
-        except Exception as e:
-            logging.error(f"Workflow failed: {e}")
-            self.update_progress(0, "Workflow failed. See logs for details.")
+    def handle_error(self, error):
+        """
+        Handle an error by logging context and presenting recovery options to the user.
+        
+        Args:
+            error (Exception): The error that occurred.
+        """
+        # Save error state
+        self.state_manager.update_state("error", str(error))
+        logging.error(f"Handling error: {error}")
