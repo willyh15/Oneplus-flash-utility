@@ -22,16 +22,16 @@ class DeviceManager:
             subprocess.run([DeviceManager.ADB_PATH, "reboot", "bootloader"], check=True)
             logging.info("Rebooted to bootloader.")
         except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to reboot to bootloader: {e}")
+            logging.error("Failed to reboot to bootloader: %s", e)
 
     @staticmethod
     def flash_partition(image_path, partition):
         try:
             if DeviceManager.verify_image(image_path):
                 subprocess.run([DeviceManager.FASTBOOT_PATH, "flash", partition, image_path], check=True)
-                logging.info(f"Flashed {partition} partition with {image_path}")
+                logging.info("Flashed %s partition with %s", partition, image_path)
             else:
-                logging.error(f"Integrity check failed for {image_path}. Aborting flash.")
+                logging.error("Integrity check failed for %s. Aborting flash.", image_path)
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to flash {partition}: {e}")
 
@@ -43,7 +43,7 @@ class DeviceManager:
             logging.info("ROM flashing completed successfully.")
             return True
         except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to flash ROM: {e}")
+            logging.error("Failed to flash ROM: %s", e)
             return False
 
     @staticmethod
@@ -52,11 +52,11 @@ class DeviceManager:
             if DeviceManager.verify_image(kernel_image):
                 subprocess.run([DeviceManager.ADB_PATH, "reboot", "bootloader"], check=True)
                 subprocess.run([DeviceManager.FASTBOOT_PATH, "flash", "boot", kernel_image], check=True)
-                logging.info(f"Flashed kernel: {kernel_image}")
+                logging.info("Flashed kernel: %s", kernel_image)
             else:
-                logging.error(f"Kernel image verification failed for {kernel_image}. Aborting flash.")
+                logging.error("Kernel image verification failed for %s. Aborting flash.", kernel_image)
         except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to flash kernel: {e}")
+            logging.error("Failed to flash kernel: %s", e)
 
     @staticmethod
     def verify_image(image_path):
@@ -66,10 +66,10 @@ class DeviceManager:
                 for byte_block in iter(lambda: f.read(4096), b""):
                     sha256_hash.update(byte_block)
             checksum = sha256_hash.hexdigest()
-            logging.info(f"Checksum for {image_path}: {checksum}")
+            logging.info("Checksum for %s: %s", image_path, checksum)
             return True
         except FileNotFoundError as e:
-            logging.error(f"File not found: {e}")
+            logging.error("File not found: %s", e)
             return False
 
     # --------------- Battery and Device Status Management ---------------
@@ -77,20 +77,20 @@ class DeviceManager:
     def check_battery_level():
         try:
             battery_level = subprocess.check_output([DeviceManager.ADB_PATH, "shell", "dumpsys", "battery"]).decode()
-            logging.info(f"Battery status: {battery_level}")
+            logging.info("Battery status: %s", battery_level)
             return battery_level
         except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to retrieve battery status: {e}")
+            logging.error("Failed to retrieve battery status: %s", e)
             return None
 
     @staticmethod
     def get_device_info():
         try:
             device_info = subprocess.check_output([DeviceManager.ADB_PATH, "shell", "getprop"]).decode()
-            logging.info(f"Device info: {device_info}")
+            logging.info("Device info: %s", device_info)
             return device_info
         except subprocess.CalledProcessError as e:
-            logging.error(f"Failed to retrieve device information: {e}")
+            logging.error("Failed to retrieve device information: %s", e)
             return None
 
     @staticmethod
