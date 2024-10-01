@@ -2,7 +2,7 @@ import logging
 import json
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog,
-                             QComboBox, QProgressBar, QTextEdit, QTableWidget, QTableWidgetItem)
+                             QComboBox, QProgressBar, QTextEdit)
 import sys
 import subprocess
 import os
@@ -49,45 +49,17 @@ class LogcatThread(QtCore.QThread):
             self.process.terminate()
         self.wait()
 
-class TaskManagerWindow(QTableWidget):
-    """Manages task display and status updates."""
-    def __init__(self):
-        super(TaskManagerWindow, self).__init__(0, 2)
-        self.setHorizontalHeaderLabels(["Task Name", "Status"])
-        self.setColumnWidth(0, 250)
-        self.setColumnWidth(1, 200)
-
-    def update_tasks(self, task_name, status):
-        """Update the task table with the current status."""
-        row_count = self.rowCount()
-        for row in range(row_count):
-            if self.item(row, 0).text() == task_name:
-                self.setItem(row, 1, QTableWidgetItem(status))
-                return
-        self.insertRow(row_count)
-        self.setItem(row_count, 0, QTableWidgetItem(task_name))
-        self.setItem(row_count, 1, QTableWidgetItem(status))
-
-    def add_suggestion(self, suggestion):
-        """Add a new suggestion to the suggestions box."""
-        row_count = self.rowCount()
-        self.insertRow(row_count)
-        self.setItem(row_count, 0, QTableWidgetItem("Suggestion"))
-        self.setItem(row_count, 1, QTableWidgetItem(suggestion))
-
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = self.load_config()
+        self.config = load_config()  # Load config from 'config.json'
         self.device_profile = None
         self.logcat_thread = None
-        self.workflow_state = {}  # Workflow state tracking
         self.init_ui()
-        self.task_manager = TaskManagerWindow()
 
     def init_ui(self):
         self.setWindowTitle("Rooting & Rescue Tool")
-        self.setGeometry(300, 300, 1000, 600)
+        self.setGeometry(300, 300, 800, 600)
 
         # Device dropdown
         self.device_dropdown = QComboBox(self)
@@ -98,10 +70,6 @@ class FlashTool(QMainWindow):
         self.progressBar = QProgressBar(self)
         self.progressBar.setGeometry(50, 400, 400, 30)
         self.progressBar.setValue(0)
-
-        # Task manager table
-        self.task_manager.setGeometry(500, 50, 450, 300)
-        self.setCentralWidget(self.task_manager)
 
         # Add buttons for various actions
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
@@ -120,7 +88,7 @@ class FlashTool(QMainWindow):
 
         # Log viewer
         self.log_viewer = QTextEdit(self)
-        self.log_viewer.setGeometry(50, 410, 900, 150)
+        self.log_viewer.setGeometry(50, 410, 700, 150)
         self.log_viewer.setReadOnly(True)
 
     def add_button(self, label, y_position, function):
@@ -130,50 +98,58 @@ class FlashTool(QMainWindow):
         button.clicked.connect(function)
 
     def root_with_encryption(self):
-        success, error_code = DeviceManager.root_device(preserve_encryption=True)
-        if success:
-            self.task_manager.update_tasks("Root with Encryption", "Completed")
-            self.workflow_state['root_with_encryption'] = 'Completed'
-            QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
-        else:
-            self.handle_error("Root with Encryption", error_code)
+        DeviceManager.root_device(preserve_encryption=True)
+        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
 
     def root_without_encryption(self):
-        success, error_code = DeviceManager.root_device(preserve_encryption=False)
-        if success:
-            self.task_manager.update_tasks("Root without Encryption", "Completed")
-            self.workflow_state['root_without_encryption'] = 'Completed'
-            QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
-        else:
-            self.handle_error("Root without Encryption", error_code)
+        DeviceManager.root_device(preserve_encryption=False)
+        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
 
     def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
         if rom_zip:
-            success, error_code = DeviceManager.flash_rom(rom_zip)
+            success = DeviceManager.flash_rom(rom_zip)
             if success:
-                self.task_manager.update_tasks("Install Custom ROM", "Success")
-                self.workflow_state['install_custom_rom'] = "Success"
                 QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
             else:
-                self.handle_error("Install Custom ROM", error_code)
+                QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
 
     def flash_kernel(self):
         kernel_img = QFileDialog.getOpenFileName(self, "Select Custom Kernel Image", "", "Image files (*.img)")[0]
         if kernel_img:
-            success, error_code = DeviceManager.flash_kernel(kernel_img)
+            success = DeviceManager.flash_kernel(kernel_img)
             if success:
-                self.task_manager.update_tasks("Flash Kernel", "Success")
                 QtWidgets.QMessageBox.information(self, "Info", "Custom kernel flashed successfully.")
             else:
-                self.handle_error("Flash Kernel", error_code)
+                QtWidgets.QMessageBox.critical(self, "Error", "Kernel flashing failed. Check logs for details.")
 
-    def handle_error(self, task_name, error_code):
-        """Handle errors by updating TaskManagerWindow and providing suggestions."""
-        error_message = DeviceManager.error_suggestions.get(error_code, "Unknown error.")
-        self.task_manager.update_tasks(task_name, "Failed")
-        self.task_manager.add_suggestion(f"{task_name}: {error_message}")
-        QtWidgets.QMessageBox.critical(self, "Error", error_message)
+    def enter_rescue_mode(self):
+        success = DeviceManager.enter_rescue_mode()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Info", "Rescue mode completed successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Failed to enter rescue mode. Check logs for details.")
+
+    def backup_before_ota(self):
+        success = DeviceManager.backup_device()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Info", "Backup completed successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Backup failed. Check logs for details.")
+
+    def apply_ota_update(self):
+        ota_zip = QFileDialog.getOpenFileName(self, "Select OTA Update ZIP", "", "Zip files (*.zip)")[0]
+        if ota_zip:
+            success = DeviceManager.apply_ota_update(ota_zip)
+            if success:
+                magisk_installed = DeviceManager.reflash_magisk_after_ota()
+                if magisk_installed:
+                    QtWidgets.QMessageBox.information(self, "Info", "OTA Update applied and Magisk re-flashed successfully.")
+                else:
+                    QtWidgets.QMessageBox.critical(self, "Error", "Magisk re-flashing failed. Root may be lost.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", "OTA Update failed. Restoring from backup.")
+                DeviceManager.restore_device()
 
     def toggle_logcat(self):
         if self.logcat_thread is None:
@@ -197,27 +173,26 @@ class FlashTool(QMainWindow):
     def update_log_viewer(self, log_line):
         self.log_viewer.append(log_line)
 
-    def load_config(self, config_file='config.json'):
-        """Load configuration from a JSON file."""
-        try:
-            with open(config_file, 'r') as f:
-                config = json.load(f)
-                logging.info(f"Loaded {config_file} successfully.")
-                return config
-        except FileNotFoundError:
-            logging.warning(f"{config_file} not found. Creating default config.")
-            default_config = {
-                "oneplus7pro": {
-                    "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
-                    "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
-                }
+def load_config(config_file='config.json'):
+    try:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            logging.info(f"Loaded {config_file} successfully.")
+            return config
+    except FileNotFoundError:
+        logging.warning(f"{config_file} not found. Creating default config.")
+        default_config = {
+            "oneplus7pro": {
+                "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+                "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
             }
-            with open(config_file, 'w') as f:
-                json.dump(default_config, f, indent=4)
-            return default_config
-        except json.JSONDecodeError as e:
-            logging.error(f"Error decoding {config_file}: {e}")
-            return {}
+        }
+        with open(config_file, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        return default_config
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding {config_file}: {e}")
+        return {}
 
 def application():
     app = QApplication(sys.argv)
@@ -226,4 +201,10 @@ def application():
     try:
         sys.exit(app.exec_())
     except Exception as _:
-        logging.exception("An unexpected error occurred during application execution.")
+        logging.exception("An unexpected error occurred.")
+
+if __name__ == "__main__":
+    try:
+        application()
+    except Exception as e:
+        logging.exception("An unexpected error occurred.")
