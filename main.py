@@ -2,7 +2,7 @@ import logging
 import json
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog,
-                             QComboBox, QProgressBar, QTextEdit, QDialog, QVBoxLayout, QLabel, QListWidget)
+                             QComboBox, QProgressBar, QTextEdit, QTableWidget, QTableWidgetItem)
 import sys
 import subprocess
 import os
@@ -49,43 +49,36 @@ class LogcatThread(QtCore.QThread):
             self.process.terminate()
         self.wait()
 
-
-class TaskManagerWindow(QDialog):
-    """Task management window for viewing task states and details."""
+class TaskManagerWindow(QTableWidget):
+    """Manages task display and status updates."""
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Task Manager")
-        self.setGeometry(500, 300, 600, 400)
-        
-        # Create layout
-        layout = QVBoxLayout()
-        
-        # Task list
-        self.task_list = QListWidget()
-        layout.addWidget(self.task_list)
-
-        # Error suggestion box
-        self.error_label = QLabel("Error Suggestions:")
-        self.error_suggestions = QListWidget()
-        layout.addWidget(self.error_label)
-        layout.addWidget(self.error_suggestions)
-
-        # Set the layout
-        self.setLayout(layout)
+        super(TaskManagerWindow, self).__init__(0, 2)
+        self.setHorizontalHeaderLabels(["Task Name", "Status"])
+        self.setColumnWidth(0, 250)
+        self.setColumnWidth(1, 200)
 
     def update_tasks(self, task_name, status):
-        """Add a new task with its status."""
-        self.task_list.addItem(f"{task_name}: {status}")
+        """Update the task table with the current status."""
+        row_count = self.rowCount()
+        for row in range(row_count):
+            if self.item(row, 0).text() == task_name:
+                self.setItem(row, 1, QTableWidgetItem(status))
+                return
+        self.insertRow(row_count)
+        self.setItem(row_count, 0, QTableWidgetItem(task_name))
+        self.setItem(row_count, 1, QTableWidgetItem(status))
 
     def add_suggestion(self, suggestion):
-        """Add a recovery suggestion."""
-        self.error_suggestions.addItem(suggestion)
-
+        """Add a new suggestion to the suggestions box."""
+        row_count = self.rowCount()
+        self.insertRow(row_count)
+        self.setItem(row_count, 0, QTableWidgetItem("Suggestion"))
+        self.setItem(row_count, 1, QTableWidgetItem(suggestion))
 
 class FlashTool(QMainWindow):
     def __init__(self):
         super(FlashTool, self).__init__()
-        self.config = self.load_config()  # Load config from 'config.json'
+        self.config = self.load_config()
         self.device_profile = None
         self.logcat_thread = None
         self.workflow_state = {}  # Workflow state tracking
@@ -94,7 +87,7 @@ class FlashTool(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("Rooting & Rescue Tool")
-        self.setGeometry(300, 300, 900, 700)
+        self.setGeometry(300, 300, 1000, 600)
 
         # Device dropdown
         self.device_dropdown = QComboBox(self)
@@ -103,8 +96,12 @@ class FlashTool(QMainWindow):
 
         # Progress bar
         self.progressBar = QProgressBar(self)
-        self.progressBar.setGeometry(50, 500, 400, 30)
+        self.progressBar.setGeometry(50, 400, 400, 30)
         self.progressBar.setValue(0)
+
+        # Task manager table
+        self.task_manager.setGeometry(500, 50, 450, 300)
+        self.setCentralWidget(self.task_manager)
 
         # Add buttons for various actions
         self.add_button("Root Device (Preserve Encryption)", 90, self.root_with_encryption)
@@ -115,22 +112,15 @@ class FlashTool(QMainWindow):
         self.add_button("Apply OTA Update & Preserve Root", 290, self.apply_ota_update)
         self.add_button("One-Click Rescue Mode", 330, self.enter_rescue_mode)
 
-        # Task Manager button
-        self.add_button("Open Task Manager", 370, self.open_task_manager)
-
-        # Save and Load Workflow buttons
-        self.add_button("Save Workflow", 410, self.save_workflow_state)
-        self.add_button("Load Workflow", 450, self.load_workflow_state)
-
         # Logcat button
         self.button_logcat = QPushButton(self)
         self.button_logcat.setText("Start Logcat")
-        self.button_logcat.setGeometry(50, 490, 400, 30)
+        self.button_logcat.setGeometry(50, 370, 400, 30)
         self.button_logcat.clicked.connect(self.toggle_logcat)
 
         # Log viewer
         self.log_viewer = QTextEdit(self)
-        self.log_viewer.setGeometry(50, 530, 700, 150)
+        self.log_viewer.setGeometry(50, 410, 900, 150)
         self.log_viewer.setReadOnly(True)
 
     def add_button(self, label, y_position, function):
@@ -140,46 +130,100 @@ class FlashTool(QMainWindow):
         button.clicked.connect(function)
 
     def root_with_encryption(self):
-        DeviceManager.root_device(preserve_encryption=True)
-        self.task_manager.update_tasks("Root with Encryption", "Completed")
-        self.workflow_state['root_with_encryption'] = 'Completed'
-        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
+        success, error_code = DeviceManager.root_device(preserve_encryption=True)
+        if success:
+            self.task_manager.update_tasks("Root with Encryption", "Completed")
+            self.workflow_state['root_with_encryption'] = 'Completed'
+            QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption preserved.")
+        else:
+            self.handle_error("Root with Encryption", error_code)
 
     def root_without_encryption(self):
-        DeviceManager.root_device(preserve_encryption=False)
-        self.task_manager.update_tasks("Root without Encryption", "Completed")
-        self.workflow_state['root_without_encryption'] = 'Completed'
-        QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
+        success, error_code = DeviceManager.root_device(preserve_encryption=False)
+        if success:
+            self.task_manager.update_tasks("Root without Encryption", "Completed")
+            self.workflow_state['root_without_encryption'] = 'Completed'
+            QtWidgets.QMessageBox.information(self, "Info", "Rooting completed with encryption disabled.")
+        else:
+            self.handle_error("Root without Encryption", error_code)
 
     def install_custom_rom(self):
         rom_zip = QFileDialog.getOpenFileName(self, "Select Custom ROM ZIP", "", "Zip files (*.zip)")[0]
         if rom_zip:
-            success = DeviceManager.flash_rom(rom_zip)
-            self.task_manager.update_tasks("Install Custom ROM", "Success" if success else "Failed")
-            self.workflow_state['install_custom_rom'] = "Success" if success else "Failed"
+            success, error_code = DeviceManager.flash_rom(rom_zip)
             if success:
+                self.task_manager.update_tasks("Install Custom ROM", "Success")
+                self.workflow_state['install_custom_rom'] = "Success"
                 QtWidgets.QMessageBox.information(self, "Info", "Custom ROM installed successfully.")
             else:
-                QtWidgets.QMessageBox.critical(self, "Error", "Custom ROM installation failed. Check logs for details.")
+                self.handle_error("Install Custom ROM", error_code)
 
-    def save_workflow_state(self):
-        """Save the current workflow state to a file."""
-        save_file = QFileDialog.getSaveFileName(self, "Save Workflow State", "", "JSON Files (*.json)")[0]
-        if save_file:
-            with open(save_file, 'w') as f:
-                json.dump(self.workflow_state, f, indent=4)
-            QtWidgets.QMessageBox.information(self, "Info", "Workflow state saved successfully.")
+    def flash_kernel(self):
+        kernel_img = QFileDialog.getOpenFileName(self, "Select Custom Kernel Image", "", "Image files (*.img)")[0]
+        if kernel_img:
+            success, error_code = DeviceManager.flash_kernel(kernel_img)
+            if success:
+                self.task_manager.update_tasks("Flash Kernel", "Success")
+                QtWidgets.QMessageBox.information(self, "Info", "Custom kernel flashed successfully.")
+            else:
+                self.handle_error("Flash Kernel", error_code)
 
-    def load_workflow_state(self):
-        """Load the workflow state from a file."""
-        load_file = QFileDialog.getOpenFileName(self, "Load Workflow State", "", "JSON Files (*.json)")[0]
-        if load_file:
-            with open(load_file, 'r') as f:
-                self.workflow_state = json.load(f)
-            self.task_manager.task_list.clear()
-            for task, status in self.workflow_state.items():
-                self.task_manager.update_tasks(task, status)
-            QtWidgets.QMessageBox.information(self, "Info", "Workflow state loaded successfully.")
+    def handle_error(self, task_name, error_code):
+        """Handle errors by updating TaskManagerWindow and providing suggestions."""
+        error_message = DeviceManager.error_suggestions.get(error_code, "Unknown error.")
+        self.task_manager.update_tasks(task_name, "Failed")
+        self.task_manager.add_suggestion(f"{task_name}: {error_message}")
+        QtWidgets.QMessageBox.critical(self, "Error", error_message)
 
-    def open_task_manager(self):
-        self.task_manager.show()
+    def toggle_logcat(self):
+        if self.logcat_thread is None:
+            self.start_logcat()
+        else:
+            self.stop_logcat()
+
+    def start_logcat(self):
+        self.button_logcat.setText("Stop Logcat")
+        self.log_viewer.clear()
+        self.logcat_thread = LogcatThread()
+        self.logcat_thread.new_log.connect(self.update_log_viewer)
+        self.logcat_thread.start()
+
+    def stop_logcat(self):
+        self.button_logcat.setText("Start Logcat")
+        if self.logcat_thread:
+            self.logcat_thread.stop()
+        self.logcat_thread = None
+
+    def update_log_viewer(self, log_line):
+        self.log_viewer.append(log_line)
+
+    def load_config(self, config_file='config.json'):
+        """Load configuration from a JSON file."""
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+                logging.info(f"Loaded {config_file} successfully.")
+                return config
+        except FileNotFoundError:
+            logging.warning(f"{config_file} not found. Creating default config.")
+            default_config = {
+                "oneplus7pro": {
+                    "twrp": "https://dl.twrp.me/guacamoleb/twrp-3.3.1-1-guacamoleb.img",
+                    "magisk": "https://github.com/topjohnwu/Magisk/releases/latest"
+                }
+            }
+            with open(config_file, 'w') as f:
+                json.dump(default_config, f, indent=4)
+            return default_config
+        except json.JSONDecodeError as e:
+            logging.error(f"Error decoding {config_file}: {e}")
+            return {}
+
+def application():
+    app = QApplication(sys.argv)
+    window = FlashTool()
+    window.show()
+    try:
+        sys.exit(app.exec_())
+    except Exception as _:
+        logging.exception("An unexpected error occurred during application execution.")
