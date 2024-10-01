@@ -6,8 +6,50 @@ import logging
 class DeviceManager:
     ADB_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/platform-tools/adb.exe"
     FASTBOOT_PATH = "C:/Users/willh/Downloads/platform-tools-latest-windows/platform-tools/fastboot.exe"
-
+    # Dictionary to store error recovery suggestions
+    error_suggestions = {
+        "ADB_NOT_FOUND": "ADB binary not found. Please ensure ADB is correctly installed and configured.",
+        "DEVICE_OFFLINE": "Device is offline. Check the device connection and USB debugging settings.",
+        "FLASH_ERROR": "Flashing failed. Ensure the bootloader is unlocked and the image file is compatible.",
+        "UNKNOWN_ERROR": "An unknown error occurred. Please check the logs for more details."
+    }
+    
     SUPPORTED_DEVICES = ["OnePlus 7 Pro", "Pixel 5"]
+
+        @staticmethod
+    def root_device(preserve_encryption=True):
+        try:
+            if preserve_encryption:
+                logging.info("Rooting device while preserving encryption...")
+            else:
+                logging.info("Rooting device and disabling encryption...")
+            # Dummy command to simulate success/failure
+            subprocess.run([DeviceManager.ADB_PATH, "shell", "echo", "rooting"], check=True)
+            return True
+        except FileNotFoundError:
+            logging.error("ADB binary not found. Please check your ADB path.")
+            return False, "ADB_NOT_FOUND"
+        except subprocess.CalledProcessError:
+            logging.error("Failed to execute root command. Device might be offline.")
+            return False, 
+            "DEVICE_OFFLINE"
+
+    @staticmethod
+    def flash_rom(rom_path):
+        try:
+            logging.info(f"Starting to flash ROM: {rom_path}")
+            subprocess.run([DeviceManager.ADB_PATH, "sideload", rom_path], check=True)
+            logging.info("ROM flashing completed successfully.")
+            return True, None
+        except FileNotFoundError:
+            logging.error("ADB binary not found. Please check your ADB path.")
+            return False, "ADB_NOT_FOUND"
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to flash ROM: {e}")
+            return False, "FLASH_ERROR"
+        except Exception as e:
+            logging.error(f"An unexpected error occurred: {e}")
+            return False, "UNKNOWN_ERROR"
 
     @staticmethod
     def detect_connected_devices():
