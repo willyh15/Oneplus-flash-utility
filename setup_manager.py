@@ -2,16 +2,14 @@ import os
 import subprocess
 import logging
 
+
 class SetupManager:
     """
     Handles initial setup, path validation, and dependency checks.
     Ensures that adb, fastboot, and other binaries are accessible.
     """
 
-    required_binaries = {
-        "adb": "adb.exe",
-        "fastboot": "fastboot.exe"
-    }
+    required_binaries = {"adb": "adb.exe", "fastboot": "fastboot.exe"}
 
     def __init__(self, tool_paths):
         self.tool_paths = tool_paths
@@ -30,7 +28,9 @@ class SetupManager:
         Checks if a device is connected using adb.
         """
         try:
-            result = subprocess.check_output([SetupManager.required_binaries['adb'], "devices"]).decode()
+            result = subprocess.check_output(
+                [SetupManager.required_binaries["adb"], "devices"]
+            ).decode()
             logging.info(f"Connected devices: \n{result}")
             return result
         except subprocess.CalledProcessError as e:

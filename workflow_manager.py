@@ -1,6 +1,7 @@
 import logging
 import time
 
+
 class WorkflowManager:
     def __init__(self, progress_bar, device_profile, workflow_type, *args):
         self.progress_bar = progress_bar
@@ -9,13 +10,15 @@ class WorkflowManager:
         self.args = args
 
     def start(self):
-        logging.info(f"Starting workflow: {self.workflow_type} for device {self.device_profile}")
+        logging.info(
+            f"Starting workflow: {self.workflow_type} for device {self.device_profile}"
+        )
         self.progress_bar.setValue(0)
 
         # Simulate each step of the workflow
-        if self.workflow_type == 'partition_flash':
+        if self.workflow_type == "partition_flash":
             self._flash_partitions(*self.args)
-        elif self.workflow_type == 'backup_restore':
+        elif self.workflow_type == "backup_restore":
             self._backup_restore()
 
         self.progress_bar.setValue(100)
