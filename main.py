@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QFileDialog
                              QComboBox, QProgressBar, QTextEdit)
 import sys
 import subprocess
-import os
 from device_manager import DeviceManager
 import warnings
 
