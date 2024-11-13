@@ -1,9 +1,11 @@
 import os
 
+
 class Environment:
     """
     Manages the application's environment variables, paths, and sensitive data.
     """
+
     @staticmethod
     def get_env_var(variable_name, default=None):
         return os.getenv(variable_name, default)
