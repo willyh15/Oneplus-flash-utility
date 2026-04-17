@@ -2,16 +2,17 @@ import schedule
 import time
 import logging
 
+
 class TaskScheduler:
     """
     Manages scheduled tasks and background processes for recurring operations.
     """
 
     @staticmethod
-    def schedule_backup(interval='daily'):
-        if interval == 'daily':
+    def schedule_backup(interval="daily"):
+        if interval == "daily":
             schedule.every().day.at("02:00").do(TaskScheduler.run_backup)
-        elif interval == 'weekly':
+        elif interval == "weekly":
             schedule.every().monday.at("02:00").do(TaskScheduler.run_backup)
 
     @staticmethod
